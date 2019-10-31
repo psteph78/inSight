@@ -1,0 +1,13 @@
+<resources>
+    <string name="no_name">NoName</string>
+    <string name="app_name">inSight</string>
+    <string name="log_in">Login</string>
+    <string name="sign_up">Signup</string>
+    <string name="confirm_password">confirm password</string>
+    <string name="passwordSingup">password</string>
+    <string name="password">*****</string>
+    <string name="email">email</string>
+    <string name="username">username</string>
+    <string name="back">Back</string>
+    <string name="log_out">Logout</string>
+</resources>
