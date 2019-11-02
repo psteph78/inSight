@@ -2,6 +2,7 @@ package com.example.insight.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -28,7 +29,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +45,7 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText email;
     private EditText password;
     private EditText confirmPassword;
+    private Toolbar actionbar;
 
     private Button signupButton;
     private Button backButton;
@@ -63,6 +64,9 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        actionbar = findViewById(R.id.app_bar);
+        setSupportActionBar(actionbar);
 
         username = findViewById(R.id.usernameField);
         email = findViewById(R.id.emailField);
@@ -217,13 +221,12 @@ public class SignUpActivity extends AppCompatActivity {
                 fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
-                        final Uri downloadUrl = uri;
                         User user = new User();
                         user.setUsername(username.getText().toString());
                         user.setEmail(email.getText().toString());
                         user.setPoints(0);
                         user.setProfileImgName(getPathFromURI(selectedImageUri).trim());
-                        user.setProfileImgUrl(fileReference.getDownloadUrl().toString());
+                        user.setProfileImgUrl(uri.toString());
 
                         String id = databaseReference.push().getKey();
                         user.setId(id);

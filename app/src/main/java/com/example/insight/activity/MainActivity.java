@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()){
                                 if (Objects.requireNonNull(firebaseAuth.getCurrentUser().isEmailVerified())){
-                                    startActivity(new Intent(MainActivity.this, MapViewActivity.class));
+                                    startActivity(new Intent(MainActivity.this, UserProfile.class));
                                 }
                                 else{
                                     Toast.makeText(MainActivity.this, "Please verify your email address!", Toast.LENGTH_LONG).show();
