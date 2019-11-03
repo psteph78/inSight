@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.insight.R;
+import com.example.insight.activity.mapActivity.MapsActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()){
                                 if (Objects.requireNonNull(firebaseAuth.getCurrentUser().isEmailVerified())){
-                                    startActivity(new Intent(MainActivity.this, MapViewActivity.class));
+                                    startActivity(new Intent(MainActivity.this, MapsActivity.class));
                                 }
                                 else{
                                     Toast.makeText(MainActivity.this, "Please verify your email address!", Toast.LENGTH_LONG).show();
