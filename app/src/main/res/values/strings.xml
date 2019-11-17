@@ -10,5 +10,7 @@
     <string name="username">username</string>
     <string name="back">Back</string>
     <string name="log_out">Logout</string>
+    <string name="latest_entries">Latest Entries</string>
+    <string name="check_in">Check-in</string>
     <string name="title_activity_maps">Map</string>
 </resources>

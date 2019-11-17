@@ -2,7 +2,9 @@ package com.example.insight.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -11,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -18,11 +21,15 @@ import android.widget.Toast;
 import com.example.insight.R;
 import com.example.insight.entity.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -38,6 +45,7 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText email;
     private EditText password;
     private EditText confirmPassword;
+    private Toolbar actionbar;
 
     private Button signupButton;
     private Button backButton;
@@ -46,6 +54,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference;
+    private Uri selectedImageUri;
+
+    private StorageReference storageRef;
 
     private static final int RESULT_LOAD_IMAGE = 1;
 
@@ -53,6 +64,9 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        actionbar = findViewById(R.id.app_bar);
+        setSupportActionBar(actionbar);
 
         username = findViewById(R.id.usernameField);
         email = findViewById(R.id.emailField);
@@ -62,8 +76,10 @@ public class SignUpActivity extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         circleImageView = findViewById(R.id.profile_image);
 
+        storageRef = FirebaseStorage.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
+
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,13 +87,13 @@ public class SignUpActivity extends AppCompatActivity {
                         confirmPassword.getText().toString().isEmpty()){
                     Toast.makeText(SignUpActivity.this, "All fields are required!", Toast.LENGTH_LONG).show();
                 } else if (!username.getText().toString().matches("^[a-zA-Z0-9]{3,}$")){
-                    Toast.makeText(SignUpActivity.this, "Username must contain a minimum 3 characters. Only letters and digits allowed.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(SignUpActivity.this, "Username must contain a minimum 3 characters. Only letters and digits allowed. Can't contain empty spaces.", Toast.LENGTH_LONG).show();
                 } else if (username.getText().toString().length() > 20){
                     Toast.makeText(SignUpActivity.this, "Username is too long!", Toast.LENGTH_LONG).show();
                 } else if (!password.getText().toString().equals(confirmPassword.getText().toString())){
                     Toast.makeText(SignUpActivity.this, "Password does not match!", Toast.LENGTH_LONG).show();
-                } else if (!password.getText().toString().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$")){
-                    Toast.makeText(SignUpActivity.this, "Password is too weak! It must contain a minimum of 8 characters, at least one letter, one digit and one special character!", Toast.LENGTH_LONG).show();
+                //} else if (!password.getText().toString().matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$")){
+                //    Toast.makeText(SignUpActivity.this, "Password is too weak! It must contain a minimum of 8 characters, at least one letter, one digit and one special character!", Toast.LENGTH_LONG).show();
                 }
 
                 else{
@@ -85,7 +101,12 @@ public class SignUpActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()){
-                                    addUser();
+                                    if (selectedImageUri != null){
+                                        addUserWithProfilePic();
+                                    } else {
+                                        addUser();
+                                    }
+
                                     Objects.requireNonNull(firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
@@ -130,7 +151,8 @@ public class SignUpActivity extends AppCompatActivity {
             public void run() {
                 if (resultCode == RESULT_OK) {
                     // Get the url from data
-                    final Uri selectedImageUri = data.getData();
+                    //final Uri selectedImageUri = data.getData();
+                    selectedImageUri = data.getData();
                     if (null != selectedImageUri) {
                         // Get the path from the Uri
                         String path = getPathFromURI(selectedImageUri);
@@ -183,14 +205,51 @@ public class SignUpActivity extends AppCompatActivity {
         return res;
     }
 
+
+    private String getFileExtension(Uri uri){
+        ContentResolver cr = getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cr.getType(uri));
+    }
+
+    private void addUserWithProfilePic(){
+        if(selectedImageUri != null);
+        final StorageReference fileReference = storageRef.child(System.currentTimeMillis() + "." + getFileExtension(selectedImageUri));
+        fileReference.putFile(selectedImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        User user = new User();
+                        user.setUsername(username.getText().toString());
+                        user.setEmail(email.getText().toString());
+                        user.setPoints(0);
+                        user.setProfileImgName(getPathFromURI(selectedImageUri).trim());
+                        user.setProfileImgUrl(uri.toString());
+
+                        String id = databaseReference.push().getKey();
+                        user.setId(id);
+
+                        databaseReference.child(user.getId()).setValue(user);
+                    }
+                });
+            }
+        });
+    }
+
     private void addUser(){
         User user = new User();
         user.setUsername(username.getText().toString());
         user.setEmail(email.getText().toString());
+        user.setPoints(0);
+        user.setProfileImgName("");
+        user.setProfileImgUrl("");
 
         String id = databaseReference.push().getKey();
         user.setId(id);
 
         databaseReference.child(user.getId()).setValue(user);
     }
+
 }

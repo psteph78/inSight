@@ -14,12 +14,12 @@ public class Home extends Application {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
 
-//        if(firebaseUser.isEmailVerified() ){
-            if (firebaseUser != null){
-                Intent intent = new Intent(Home.this, MapViewActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+        if (firebaseUser != null){
+            if(firebaseUser.isEmailVerified()){
+            Intent intent = new Intent(Home.this, MapViewActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
             }
         }
-//    }
+    }
 }

@@ -38,6 +38,9 @@
             android:name=".activity.mapActivity.MapsActivity"
             android:label="@string/title_activity_maps"></activity>
         <activity android:name=".activity.SignUpActivity" />
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".activity.UserProfile"></activity>
+        <activity android:name=".activity.SignUpActivity" />
         <activity android:name=".activity.MapViewActivity" />
         <activity android:name=".activity.MainActivity">
             <intent-filter>
@@ -46,6 +49,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>

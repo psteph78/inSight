@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300dp"
+    android:layout_height="87dp"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="246dp"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/location_name"
+                android:layout_width="248dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@drawable/pop_up_location_name"
+                android:fontFamily="@font/montserrat"
+                android:gravity="center_vertical"
+                android:paddingLeft="45dp"
+                android:textAllCaps="false"
+                android:textColor="#176878"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/check_in_button"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="55dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:background="@drawable/pop_up_location_checkin"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/check_in"
+                android:textAllCaps="false"
+                android:textColor="#000000"
+                android:textSize="10sp" />
+
+            <ImageView
+                android:id="@+id/location_type_img"
+                android:layout_width="38dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/location_points"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/pop_up_location_points" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:background="#08BAD1">
+
+        <Button
+            android:id="@+id/camera_option_button"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="230dp"
+            android:background="@drawable/camera_option" />
+
+        <Button
+            android:id="@+id/comment_option_button"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/comment_option" />
+
+        <Button
+            android:id="@+id/information_option_button"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="255dp"
+            android:layout_marginEnd="15dp"
+            android:background="@drawable/information_option" />
+    </FrameLayout>
+
+</LinearLayout>
