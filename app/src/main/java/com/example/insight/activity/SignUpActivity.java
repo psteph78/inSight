@@ -251,5 +251,4 @@ public class SignUpActivity extends AppCompatActivity {
 
         databaseReference.child(user.getId()).setValue(user);
     }
-
 }
