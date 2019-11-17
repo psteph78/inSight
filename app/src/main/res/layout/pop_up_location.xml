@@ -17,13 +17,14 @@
 
             <TextView
                 android:id="@+id/location_name"
-                android:layout_width="248dp"
+                android:layout_width="192dp"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
+                android:scrollbars="vertical"
                 android:background="@drawable/pop_up_location_name"
                 android:fontFamily="@font/montserrat"
                 android:gravity="center_vertical"
-                android:paddingLeft="45dp"
+                android:paddingStart="45dp"
                 android:textAllCaps="false"
                 android:textColor="#176878"
                 android:textSize="15sp" />
@@ -33,7 +34,7 @@
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="55dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
+                android:layout_gravity="end"
                 android:background="@drawable/pop_up_location_checkin"
                 android:fontFamily="@font/montserrat"
                 android:text="@string/check_in"
@@ -52,6 +53,7 @@
             android:id="@+id/location_points"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:gravity="center"
             android:layout_weight="1"
             android:background="@drawable/pop_up_location_points" />
     </LinearLayout>

@@ -1,0 +1,18 @@
+[
+  {
+    "featureType": "poi",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+
+  {
+    "zoom": 10,
+    "center": "homeLatlng",
+    "mapTypeId": "google.maps.MapTypeId.ROADMAP",
+  }
+]
+

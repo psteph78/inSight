@@ -4,18 +4,40 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.Manifest;
+import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LevelListDrawable;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.method.ScrollingMovementMethod;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.insight.R;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.enums.LocationType;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
@@ -33,6 +55,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Location> locations;
     private List<Marker> markers;
     private DatabaseReference database;
+    private LocationManager locationManager;
+
+    private Dialog locationDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,28 +69,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        locationDialog = new Dialog(this);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.mMap = googleMap;
+        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         Log.d("db", "reading");
         database.orderByChild("id").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 locations = new ArrayList<>();
-                for (DataSnapshot entity : dataSnapshot.getChildren()){
+                for (DataSnapshot entity : dataSnapshot.getChildren()) {
                     Location toBuild = new Location();
 
                     toBuild.setId(entity.child("id").getValue().toString());
-                    toBuild.setTitle(entity.child("title").toString());
-                    toBuild.setDescription(entity.child("description").toString());
-                    toBuild.setType(LocationType.valueOf((String)entity.child("type").getValue()));
+                    toBuild.setTitle(entity.child("title").getValue().toString());
+                    toBuild.setDescription(entity.child("description").getValue().toString());
+                    toBuild.setType(LocationType.valueOf((String) entity.child("type").getValue()));
+                    toBuild.setRewardPoints(Integer.valueOf(entity.child("rewardPoints").getValue().toString()));
 
-                    double x = (Double)entity.child("coordinates/latitude").getValue();
-                    double y = (Double)entity.child("coordinates/longitude").getValue();
+                    double x = (Double) entity.child("coordinates/latitude").getValue();
+                    double y = (Double) entity.child("coordinates/longitude").getValue();
 
-                    LatLng coordinates = new LatLng(x,y);
+                    LatLng coordinates = new LatLng(x, y);
                     toBuild.setCoordinates(coordinates);
 
                     locations.add(toBuild);
@@ -73,16 +102,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 mMap.clear();
 
+//                mMap.setMyLocationEnabled(true);
+//                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
                 for (Location location : locations) {
                     System.out.println(location.toString());
                     LatLng coordinates = location.getCoordinates();
 
+                    int height = 100;
+                    int width = 100;
+                    BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.applogo);
+                    Bitmap b=bitmapdraw.getBitmap();
+                    Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+
                     Marker newMarker = mMap.addMarker(new MarkerOptions()
                             .position(coordinates)
-                            .title(location.getTitle()));
+                            .title(location.getTitle())
+                            .anchor(0.5f, 0.5f)
+                            .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
                     newMarker.setTag(0);
                     markers.add(newMarker);
                 }
+
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Log.d("Clicked location", "LOCATION MARKER CLICKED");
+                        ShowPopUpLocation(marker);
+                        return true;
+                    }
+                });
             }
 
             @Override
@@ -98,5 +147,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+    }
+
+    public void ShowPopUpLocation(Marker marker){
+        TextView locationName;
+        TextView locationPoints;
+        ImageView locationType;
+
+        locationDialog.setContentView(R.layout.pop_up_location);
+
+        locationName = locationDialog.findViewById(R.id.location_name);
+        locationPoints = locationDialog.findViewById(R.id.location_points);
+        locationType = locationDialog.findViewById(R.id.location_type_img);
+
+        //sets title of location
+        locationName.setText(marker.getTitle());
+        locationName.setMovementMethod(new ScrollingMovementMethod());
+
+        //sets points of location
+        Spannable nrPoints = new SpannableString(String.valueOf(getPointsOfLocation(marker.getTitle())));
+        nrPoints.setSpan(new ForegroundColorSpan(Color.rgb(23,104,120)), 0, nrPoints.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        nrPoints.setSpan(new RelativeSizeSpan(1.4f), 0, nrPoints.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        nrPoints.setSpan(new StyleSpan(Typeface.BOLD), 0, nrPoints.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        locationPoints.setText(nrPoints);
+        locationPoints.append("\n");
+
+        Spannable points = new SpannableString("total points");
+        points.setSpan(new ForegroundColorSpan(Color.rgb(128,128,128)), 0, points.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        points.setSpan(new RelativeSizeSpan(0.5f), 0, points.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        locationPoints.append(points);
+
+        String locationTypeEnum = getTypeOfLocation(marker.getTitle());
+
+        String uri = "@drawable/".concat(locationTypeEnum);
+        int imageResource = getResources().getIdentifier(uri, null, getPackageName());
+        Drawable res = getResources().getDrawable(imageResource);
+        locationType.setImageDrawable(res);
+
+        locationDialog.show();
+    }
+
+    private Integer getPointsOfLocation(String locationName){
+        for(Location location: this.locations){
+            if (location.getTitle().equals(locationName)){
+                return location.getRewardPoints();
+            }
+        }
+        return null;
+    }
+
+    private String getTypeOfLocation(String locationName){
+        for(Location location: this.locations){
+            if (location.getTitle().equals(locationName)){
+                return location.getType().toString().toLowerCase();
+            }
+        }
+        return null;
     }
 }

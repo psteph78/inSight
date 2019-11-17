@@ -7,7 +7,7 @@ public enum LocationType {
     UNIVERSITY,
     MALL,
     MUSEUM,
-    THATRE,
+    THEATRE,
     PARK,
     BOTANICAL_GARDEN,
 }
