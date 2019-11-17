@@ -31,7 +31,6 @@
 
         <TextView
             android:id="@+id/userNameText"
-            android:onClick="ShowPopUpLocation"
             android:layout_width="270dp"
             android:layout_height="45dp"
             android:layout_marginTop="10dp"

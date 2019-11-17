@@ -9,15 +9,25 @@ public class Location {
     private String title;
     private String description;
     private LocationType type;
+    private Integer rewardPoints;
 
     public Location() {
     }
 
-    public Location(LatLng coordinates, String title, String description, LocationType type) {
+    public Location(LatLng coordinates, String title, String description, LocationType type, Integer rewardPoints) {
         this.coordinates = coordinates;
         this.title = title;
         this.description = description;
         this.type = type;
+        this.rewardPoints = rewardPoints;
+    }
+
+    public Integer getRewardPoints() {
+        return rewardPoints;
+    }
+
+    public void setRewardPoints(Integer rewardPoints) {
+        this.rewardPoints = rewardPoints;
     }
 
     public String getId() {

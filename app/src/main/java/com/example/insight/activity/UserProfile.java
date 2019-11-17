@@ -150,24 +150,24 @@ public class UserProfile extends AppCompatActivity {
 
 
 
-    public void ShowPopUpLocation(View v){
-        TextView locationName;
-        TextView locationPoints;
-        ImageView locationType;
-
-        locationDialog.setContentView(R.layout.pop_up_location);
-        locationName = locationDialog.findViewById(R.id.location_name);
-        locationPoints = locationDialog.findViewById(R.id.location_points);
-        locationType = locationDialog.findViewById(R.id.location_type_img);
-
-        String uri = "@drawable/church";
-        int imageResource = getResources().getIdentifier(uri, null, getPackageName());
-        Drawable res = getResources().getDrawable(imageResource);
-        locationType.setImageDrawable(res);
-
-        locationName.setText(userName.getText());
-        locationPoints.setText(userPoints.getText());
-
-        locationDialog.show();
-    }
+//    public void ShowPopUpLocation(View v){
+//        TextView locationName;
+//        TextView locationPoints;
+//        ImageView locationType;
+//
+//        locationDialog.setContentView(R.layout.pop_up_location);
+//        locationName = locationDialog.findViewById(R.id.location_name);
+//        locationPoints = locationDialog.findViewById(R.id.location_points);
+//        locationType = locationDialog.findViewById(R.id.location_type_img);
+//
+//        String uri = "@drawable/church";
+//        int imageResource = getResources().getIdentifier(uri, null, getPackageName());
+//        Drawable res = getResources().getDrawable(imageResource);
+//        locationType.setImageDrawable(res);
+//
+//        locationName.setText(userName.getText());
+//        locationPoints.setText(userPoints.getText());
+//
+//        locationDialog.show();
+//    }
 }

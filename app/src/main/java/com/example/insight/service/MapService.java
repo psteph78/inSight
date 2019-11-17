@@ -1,9 +1,23 @@
 package com.example.insight.service;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.insight.R;
+import com.example.insight.activity.mapActivity.MapsActivity;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.enums.LocationType;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,6 +32,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MapService {
     private List<Location> locations;
@@ -25,12 +40,21 @@ public class MapService {
     private DatabaseReference database;
     private GoogleMap map;
 
-    public MapService(GoogleMap map) {
-        //initDatabase();
+    private Dialog locationDialog;
+
+    public List<Location> getLocations() {
+        return locations;
+    }
+
+    public MapService(GoogleMap map, Context context) {
+
+        locationDialog = new Dialog(context);
+
         this.locations = new ArrayList<>();
         this.markers = new ArrayList<>();
         this.database = FirebaseDatabase.getInstance().getReference("locations");
         this.map = map;
+        //initDatabase();
         queryLocations();
         //Log.d("constructor", "size of list is: " + locations.size());
         //this.map = setMap(map);
@@ -84,6 +108,15 @@ public class MapService {
                     markers.add(newMarker);
                     Log.d("building","added new marker");
                 }
+
+                map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Log.d("Clicked location", "LOCATION MARKER CLICKED");
+                        ShowPopUpLocation(marker);
+                        return true;
+                    }
+                });
             }
 
             @Override
@@ -123,15 +156,15 @@ public class MapService {
         List<Location> locations = new ArrayList<>();
 
         // add below new locations
-        locations.add(new Location(new LatLng(46.7695133,23.5898073), "Matei Corvin Statue", "Description", LocationType.MONUMENT));
-        locations.add(new Location(new LatLng(46.769334,23.589890), "'Unirii' Main Square", "Description", LocationType.MAIN_SQUARE));
-        locations.add(new Location(new LatLng(46.769977,23.589429), "Romano-Catholic Church 'Sfantul Mihail'", "Description", LocationType.CHURCH));
-        locations.add(new Location(new LatLng(46.767882,23.591431), "'Babes-Bolyai' Univeristy", "Description", LocationType.UNIVERSITY));
-        locations.add(new Location(new LatLng(46.770564,23.590454), "Art Museum", "Description", LocationType.MUSEUM));
-        locations.add(new Location(new LatLng(46.772052,23.596693), "Mithropolitan Cathedral 'Adormirea Maicii Domnului'", "Description", LocationType.CHURCH));
-        locations.add(new Location(new LatLng(46.771122,23.597104), "Avram Iancu Statue", "Description", LocationType.MONUMENT));
-        locations.add(new Location(new LatLng(46.769924,23.597887), "National Operahouse", "Description", LocationType.THATRE));
-        locations.add(new Location(new LatLng(46.769419,23.597950), "Operahouse Park", "Description", LocationType.PARK));
+        locations.add(new Location(new LatLng(46.7695133,23.5898073), "Matei Corvin Statue", "Description", LocationType.MONUMENT, 25));
+        locations.add(new Location(new LatLng(46.769334,23.589890), "'Unirii' Main Square", "Description", LocationType.MAIN_SQUARE, 30));
+        locations.add(new Location(new LatLng(46.769977,23.589429), "Romano-Catholic Church 'Sfantul Mihail'", "Description", LocationType.CHURCH, 45));
+        locations.add(new Location(new LatLng(46.767882,23.591431), "'Babes-Bolyai' Univeristy", "Description", LocationType.UNIVERSITY, 20));
+        locations.add(new Location(new LatLng(46.770564,23.590454), "Art Museum", "Description", LocationType.MUSEUM, 25));
+        locations.add(new Location(new LatLng(46.772052,23.596693), "Mithropolitan Cathedral 'Adormirea Maicii Domnului'", "Description", LocationType.CHURCH, 40));
+        locations.add(new Location(new LatLng(46.771122,23.597104), "Avram Iancu Statue", "Description", LocationType.MONUMENT, 25));
+        locations.add(new Location(new LatLng(46.769924,23.597887), "National Operahouse", "Description", LocationType.THATRE, 50));
+        locations.add(new Location(new LatLng(46.769419,23.597950), "Operahouse Park", "Description", LocationType.PARK, 35));
 
         return locations;
     }
@@ -147,5 +180,63 @@ public class MapService {
             // add entity to database
             database.child(location.getId()).setValue(location);
         }
+    }
+
+    public void ShowPopUpLocation(Marker marker){
+        TextView locationName;
+        TextView locationPoints;
+        ImageView locationType;
+
+        locationDialog.setContentView(R.layout.pop_up_location);
+
+        locationName = locationDialog.findViewById(R.id.location_name);
+        locationPoints = locationDialog.findViewById(R.id.location_points);
+        locationType = locationDialog.findViewById(R.id.location_type_img);
+
+        //sets title of location
+        locationName.setText(marker.getTitle());
+
+        //sets points of location
+//        Spannable nrPoints = new SpannableString(getPointsOfLocation(marker.getTitle()).toString());
+//        nrPoints.setSpan(new ForegroundColorSpan(Color.rgb(23,104,120)), 0, nrPoints.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        nrPoints.setSpan(new RelativeSizeSpan(1.4f), 0, nrPoints.length(),
+//                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        nrPoints.setSpan(new StyleSpan(Typeface.BOLD), 0, nrPoints.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//
+//        locationPoints.setText(nrPoints);
+//        locationPoints.append("\n");
+//
+//        Spannable points = new SpannableString("total points");
+//        points.setSpan(new ForegroundColorSpan(Color.rgb(128,128,128)), 0, points.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        points.setSpan(new RelativeSizeSpan(0.5f), 0, points.length(),
+//                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        locationPoints.append(points);
+//
+//        String locationTypeEnum = getTypeOfLocation(marker.getTitle());
+
+        //String uri = "@drawable/".concat(locationTypeEnum);
+//        int imageResource = getResources().getIdentifier(uri, null, getPackageName());
+//        Drawable res = getResources().getDrawable(imageResource);
+//        locationType.setImageDrawable(res);
+
+        locationDialog.show();
+    }
+
+    private Integer getPointsOfLocation(String locationName){
+        for(Location location: this.getLocations()){
+            if (location.getTitle().equals(locationName)){
+                return location.getRewardPoints();
+            }
+        }
+        return null;
+    }
+
+    private String getTypeOfLocation(String locationName){
+        for(Location location: this.getLocations()){
+            if (location.getTitle().equals(locationName)){
+                return location.getType().toString().toLowerCase();
+            }
+        }
+        return null;
     }
 }
