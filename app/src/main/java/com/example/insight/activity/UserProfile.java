@@ -3,17 +3,21 @@ package com.example.insight.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.insight.R;
@@ -48,10 +52,14 @@ public class UserProfile extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference databaseReference;
 
+    private Dialog locationDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
+
+        locationDialog = new Dialog(this);
 
         userName = findViewById(R.id.userNameText);
         userPoints = findViewById(R.id.bonusPointsText);
@@ -138,5 +146,28 @@ public class UserProfile extends AppCompatActivity {
                 //startActivity(new Intent(UserProfile.this, MainActivity.class));
             }
         });
+    }
+
+
+
+    public void ShowPopUpLocation(View v){
+        TextView locationName;
+        TextView locationPoints;
+        ImageView locationType;
+
+        locationDialog.setContentView(R.layout.pop_up_location);
+        locationName = locationDialog.findViewById(R.id.location_name);
+        locationPoints = locationDialog.findViewById(R.id.location_points);
+        locationType = locationDialog.findViewById(R.id.location_type_img);
+
+        String uri = "@drawable/church";
+        int imageResource = getResources().getIdentifier(uri, null, getPackageName());
+        Drawable res = getResources().getDrawable(imageResource);
+        locationType.setImageDrawable(res);
+
+        locationName.setText(userName.getText());
+        locationPoints.setText(userPoints.getText());
+
+        locationDialog.show();
     }
 }

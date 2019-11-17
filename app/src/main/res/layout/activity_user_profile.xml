@@ -1,177 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="#E6EDEF"
-    tools:context=".activity.UserProfile">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fillViewport="true">
 
-    <include
-        layout="@layout/app_action_bar"
-        android:id="@+id/app_bar">
-    </include>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E6EDEF"
+        tools:context=".activity.UserProfile">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profile_image"
-        android:layout_width="236dp"
-        android:layout_height="159dp"
-        android:layout_marginTop="70dp"
-        android:src="@drawable/uploadpic"
-        app:civ_border_color="#FF000000"
-        app:civ_border_width="2dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <include
+            android:id="@+id/app_bar"
+            layout="@layout/app_action_bar"></include>
 
-    <TextView
-        android:id="@+id/userNameText"
-        android:layout_width="270dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
-        android:fontFamily="@font/montserrat"
-        android:gravity="center"
-        android:textColor="#176878"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@+id/bonusPointsText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_image" />
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile_image"
+            android:layout_width="236dp"
+            android:layout_height="159dp"
+            android:layout_marginTop="70dp"
+            android:src="@drawable/uploadpic"
+            app:civ_border_color="#FF000000"
+            app:civ_border_width="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/bonusPointsText"
-        android:layout_width="150dp"
-        android:layout_height="120dp"
-        android:layout_marginBottom="15dp"
-        android:background="@drawable/points_edit_text"
-        android:fontFamily="@font/playfair_display"
-        android:gravity="center"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@+id/latestEntiresText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userNameText" />
+        <TextView
+            android:id="@+id/userNameText"
+            android:onClick="ShowPopUpLocation"
+            android:layout_width="270dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/montserrat"
+            android:gravity="center"
+            android:textColor="#176878"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toTopOf="@+id/bonusPointsText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_image" />
 
-    <TextView
-        android:id="@+id/thirdEntryName"
-        android:layout_width="220dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="33dp"
-        android:background="#FFFFFF"
-        android:fontFamily="@font/montserrat"
-        android:textColor="#176878"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/thirdEntryPoints"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/secondEntryName" />
+        <TextView
+            android:id="@+id/bonusPointsText"
+            android:layout_width="150dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/points_edit_text"
+            android:fontFamily="@font/playfair_display"
+            android:gravity="center"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toTopOf="@+id/latestEntiresText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/userNameText" />
 
-    <TextView
-        android:id="@+id/latestEntiresText"
-        android:layout_width="230dp"
-        android:layout_height="45dp"
-        android:layout_marginBottom="20dp"
-        android:fontFamily="@font/montserrat"
-        android:gravity="center"
-        android:text="@string/latest_entries"
-        android:textColor="#176878"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@+id/firstEntryName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bonusPointsText" />
+        <TextView
+            android:id="@+id/thirdEntryName"
+            android:layout_width="220dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="68dp"
+            android:layout_marginBottom="33dp"
+            android:background="#FFFFFF"
+            android:fontFamily="@font/montserrat"
+            android:textColor="#176878"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/thirdEntryPoints"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/secondEntryName" />
 
-    <TextView
-        android:id="@+id/firstEntryName"
-        android:layout_width="220dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="10dp"
-        android:background="#FFFFFF"
-        android:fontFamily="@font/montserrat"
-        android:textColor="#176878"
-        app:layout_constraintBottom_toTopOf="@+id/secondEntryName"
-        app:layout_constraintEnd_toStartOf="@+id/firstEntryPoints"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/latestEntiresText" />
+        <TextView
+            android:id="@+id/latestEntiresText"
+            android:layout_width="230dp"
+            android:layout_height="45dp"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/montserrat"
+            android:gravity="center"
+            android:text="@string/latest_entries"
+            android:textColor="#176878"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toTopOf="@+id/firstEntryName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bonusPointsText" />
 
-    <TextView
-        android:id="@+id/secondEntryName"
-        android:layout_width="220dp"
-        android:layout_height="40dp"
-        android:layout_marginBottom="10dp"
-        android:background="#FFFFFF"
-        android:fontFamily="@font/montserrat"
-        android:textColor="#176878"
-        app:layout_constraintBottom_toTopOf="@+id/thirdEntryName"
-        app:layout_constraintEnd_toStartOf="@+id/secondEntryPoints"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/firstEntryName" />
+        <TextView
+            android:id="@+id/firstEntryName"
+            android:layout_width="220dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="68dp"
+            android:layout_marginBottom="10dp"
+            android:background="#FFFFFF"
+            android:fontFamily="@font/montserrat"
+            android:textColor="#176878"
+            app:layout_constraintBottom_toTopOf="@+id/secondEntryName"
+            app:layout_constraintEnd_toStartOf="@+id/firstEntryPoints"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/latestEntiresText" />
 
-    <TextView
-        android:id="@+id/firstEntryPoints"
-        android:layout_width="53dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="22dp"
-        android:background="@drawable/points_edit_text_small"
-        android:fontFamily="@font/montserrat"
-        app:layout_constraintBottom_toTopOf="@+id/secondEntryPoints"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/firstEntryName"
-        app:layout_constraintTop_toBottomOf="@+id/latestEntiresText" />
+        <TextView
+            android:id="@+id/secondEntryName"
+            android:layout_width="220dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="68dp"
+            android:layout_marginBottom="10dp"
+            android:background="#FFFFFF"
+            android:fontFamily="@font/montserrat"
+            android:textColor="#176878"
+            app:layout_constraintBottom_toTopOf="@+id/thirdEntryName"
+            app:layout_constraintEnd_toStartOf="@+id/secondEntryPoints"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/firstEntryName" />
 
-    <TextView
-        android:id="@+id/secondEntryPoints"
-        android:layout_width="53dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="13dp"
-        android:background="@drawable/points_edit_text_small"
-        android:fontFamily="@font/montserrat"
-        app:layout_constraintBottom_toTopOf="@+id/thirdEntryPoints"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/secondEntryName"
-        app:layout_constraintTop_toBottomOf="@+id/firstEntryPoints" />
+        <TextView
+            android:id="@+id/firstEntryPoints"
+            android:layout_width="53dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="22dp"
+            android:layout_marginEnd="70dp"
+            android:background="@drawable/points_edit_text_small"
+            android:fontFamily="@font/montserrat"
+            app:layout_constraintBottom_toTopOf="@+id/secondEntryPoints"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/firstEntryName"
+            app:layout_constraintTop_toBottomOf="@+id/latestEntiresText" />
 
-    <TextView
-        android:id="@+id/thirdEntryPoints"
-        android:layout_width="53dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="13dp"
-        android:layout_marginBottom="35dp"
-        android:background="@drawable/points_edit_text_small"
-        android:fontFamily="@font/montserrat"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/thirdEntryName"
-        app:layout_constraintTop_toBottomOf="@+id/secondEntryPoints" />
+        <TextView
+            android:id="@+id/secondEntryPoints"
+            android:layout_width="53dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="13dp"
+            android:layout_marginEnd="70dp"
+            android:background="@drawable/points_edit_text_small"
+            android:fontFamily="@font/montserrat"
+            app:layout_constraintBottom_toTopOf="@+id/thirdEntryPoints"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/secondEntryName"
+            app:layout_constraintTop_toBottomOf="@+id/firstEntryPoints" />
 
-    <Button
-        android:id="@+id/logoutButton"
-        android:layout_width="96dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="157dp"
-        android:layout_marginTop="9dp"
-        android:layout_marginEnd="158dp"
-        android:background="@drawable/roundedbutton"
-        android:fontFamily="@font/montserrat"
-        android:text="@string/log_out"
-        android:textAllCaps="false"
-        android:textColor="#FFFFFF"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/thirdEntryName" />
+        <TextView
+            android:id="@+id/thirdEntryPoints"
+            android:layout_width="53dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="13dp"
+            android:layout_marginEnd="70dp"
+            android:layout_marginBottom="35dp"
+            android:background="@drawable/points_edit_text_small"
+            android:fontFamily="@font/montserrat"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/thirdEntryName"
+            app:layout_constraintTop_toBottomOf="@+id/secondEntryPoints" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/logout_img"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/thirdEntryName" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
