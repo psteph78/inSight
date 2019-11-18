@@ -85,9 +85,25 @@
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="255dp"
-            android:layout_marginEnd="15dp"
+            android:layout_marginStart="240dp"
+            android:layout_marginEnd="60dp"
             android:background="@drawable/information_option" />
+
+        <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="95dp"
+        android:layout_gravity="center_vertical"
+        app:srcCompat="@drawable/pop_up_option_bar" />
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="205dp"
+            android:layout_gravity="center_vertical"
+            app:srcCompat="@drawable/pop_up_option_bar" />
     </FrameLayout>
 
 </LinearLayout>
