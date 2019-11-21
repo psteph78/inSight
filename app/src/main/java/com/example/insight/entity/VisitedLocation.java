@@ -4,8 +4,17 @@ public class VisitedLocation {
     private String id;
     private String userEmail;
     private String locationName;
+    private Integer points;
 
     public VisitedLocation() {
+    }
+
+    public Integer getPoints() {
+        return points;
+    }
+
+    public void setPoints(Integer points) {
+        this.points = points;
     }
 
     public VisitedLocation(String id, String userEmail, String locationName) {

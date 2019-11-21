@@ -1,23 +1,23 @@
 package com.example.insight.activity.mapActivity;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LevelListDrawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -33,17 +33,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.insight.R;
+import com.example.insight.activity.UserProfile;
 import com.example.insight.entity.Location;
-import com.example.insight.entity.User;
 import com.example.insight.entity.VisitedLocation;
 import com.example.insight.entity.enums.LocationType;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -57,15 +55,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     private GoogleMap mMap;
     private List<Location> locations;
@@ -73,6 +71,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference database;
     private LocationManager locationManager;
     private Set<String> visitedLocations;
+
+    private Button userProfileButton;
+    private Button mapViewButton;
 
     private android.location.Location currentUserLocation;
 
@@ -84,17 +85,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         this.locations = new ArrayList<>();
         this.markers = new ArrayList<>();
+        this.visitedLocations = new HashSet<>();
         this.database = FirebaseDatabase.getInstance().getReference("locations");
-        setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         getVisitedLocationsOfUser();
         locationDialog = new Dialog(this);
+        userProfileButton = findViewById(R.id.userProfileButton);
+        mapViewButton = findViewById(R.id.mapViewButton);
+
+        mapViewButton.setVisibility(View.INVISIBLE);
+
+        userProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapsActivity.this, UserProfile.class));
+            }
+        });
     }
 
     @Override
@@ -102,6 +115,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.mMap = googleMap;
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         Log.d("db", "reading");
+
+        getVisitedLocationsOfUser();
+
+
         database.orderByChild("id").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -134,7 +151,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.getUiSettings().setMyLocationButtonEnabled(true);
                     android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     currentUserLocation = location;
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
+                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 } else {
                     ActivityCompat.requestPermissions(MapsActivity.this, new String[] {
                                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -144,7 +163,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.getUiSettings().setMyLocationButtonEnabled(true);
                     android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     currentUserLocation = location;
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
+                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
                 }
 
                 for (Location location : locations) {
@@ -155,13 +176,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     int width = 100;
                     BitmapDrawable bitmapdraw;
 
+
                     //already visited locations will be marked with blue icons
                     if(visitedLocations.contains(location.getTitle())){
                         bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.applogo);
+                        Log.d("VISITED LOCATION BLUE", String.valueOf(visitedLocations.size()));
                     }
                     //unvisited location will be marked with pink icons
                     else{
                         bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.unvisited);
+                        Log.d("UNVISITED LOCATION PINK", String.valueOf(visitedLocations.size()));
                     }
 
                     Bitmap b=bitmapdraw.getBitmap();
@@ -270,19 +294,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return null;
     }
 
+    public AtomicBoolean getAllLocations(final AtomicBoolean done){
+        database = FirebaseDatabase.getInstance().getReference("locations");
+
+        database.orderByChild("id").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                locations = new ArrayList<>();
+                for (DataSnapshot entity : dataSnapshot.getChildren()) {
+                    Location toBuild = new Location();
+
+                    toBuild.setId(entity.child("id").getValue().toString());
+                    toBuild.setTitle(entity.child("title").getValue().toString());
+                    toBuild.setDescription(entity.child("description").getValue().toString());
+                    toBuild.setType(LocationType.valueOf((String) entity.child("type").getValue()));
+                    toBuild.setRewardPoints(Integer.valueOf(entity.child("rewardPoints").getValue().toString()));
+
+                    double x = (Double) entity.child("coordinates/latitude").getValue();
+                    double y = (Double) entity.child("coordinates/longitude").getValue();
+
+                    LatLng coordinates = new LatLng(x, y);
+                    toBuild.setCoordinates(coordinates);
+
+                    Log.d("NEW LOCATION ADDED", toBuild.toString());
+                    locations.add(toBuild);
+                }
+                done.set(true);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("db error", "cancelled", databaseError.toException().getCause());
+            }
+        });
+
+        return done;
+    }
+
     private void getVisitedLocationsOfUser(){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
-
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("visitedLocations");
 
-        visitedLocations = new HashSet<>();
-        databaseReference.orderByChild("userEmail").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.orderByChild("userEmail").equalTo(email).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                visitedLocations = new HashSet<>();
                 for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                    Log.d("READ DB VISITED onMapR", childDataSnapshot.child("locationName").getValue().toString());
                     visitedLocations.add(childDataSnapshot.child("locationName").getValue().toString());
+                    Log.d("CUR SIZE OF LIST onMapR", String.valueOf(visitedLocations.size()));
                 }
             }
 
@@ -300,6 +362,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         android.location.Location.distanceBetween(currentUserLocation.getLatitude(), currentUserLocation.getLongitude(),
                 circleOptions.getCenter().latitude, circleOptions.getCenter().longitude, distance);
 
+        Log.d("SUNT IN FUNCTIA CHECKIN", String.valueOf(visitedLocations.size()));
 
         if (visitedLocations.contains(marker.getTitle())){
             Toast.makeText(this,"You have already checked in!", Toast.LENGTH_LONG).show();
@@ -370,15 +433,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         VisitedLocation visitedLocation = new VisitedLocation();
         visitedLocation.setUserEmail(email);
         visitedLocation.setLocationName(locationName);
+        visitedLocation.setPoints(getPointsOfLocation(locationName));
         String id = databaseReference.push().getKey();
         visitedLocation.setId(id);
         databaseReference.child(visitedLocation.getId()).setValue(visitedLocation);
     }
-
-
-
-
-
 
 
 

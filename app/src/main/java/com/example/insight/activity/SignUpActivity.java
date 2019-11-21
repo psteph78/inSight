@@ -45,8 +45,6 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText email;
     private EditText password;
     private EditText confirmPassword;
-    private Toolbar actionbar;
-
     private Button signupButton;
     private Button backButton;
 
@@ -64,9 +62,6 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-
-        actionbar = findViewById(R.id.app_bar);
-        setSupportActionBar(actionbar);
 
         username = findViewById(R.id.usernameField);
         email = findViewById(R.id.emailField);
