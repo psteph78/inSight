@@ -172,7 +172,7 @@ public class UserProfile extends AppCompatActivity {
     }
 
     private void showVisitedLocationsInUi() {
-        if (visitedLocations != null){
+        if (visitedLocations != null && visitedLocations.size()>0){
             firstEntry.setText(visitedLocations.get(visitedLocations.size()-1).getLocationName());
             addLocationPointsToUI(firstEntryPoints, String.valueOf(visitedLocations.get(visitedLocations.size()-1).getPoints()));
             firstEntryPoints.setVisibility(View.VISIBLE);
