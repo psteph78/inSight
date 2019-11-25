@@ -17,12 +17,6 @@ public class VisitedLocation {
         this.points = points;
     }
 
-    public VisitedLocation(String id, String userEmail, String locationName) {
-        this.id = id;
-        this.userEmail = userEmail;
-        this.locationName = locationName;
-    }
-
     public String getId() {
         return id;
     }

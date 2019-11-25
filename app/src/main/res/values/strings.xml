@@ -13,4 +13,6 @@
     <string name="latest_entries">Latest Entries</string>
     <string name="check_in">Check-in</string>
     <string name="title_activity_maps">Map</string>
+    <string name="post_comment">Post comment</string>
+    <string name="write_your_comment_here">Write your comment here ...</string>
 </resources>
