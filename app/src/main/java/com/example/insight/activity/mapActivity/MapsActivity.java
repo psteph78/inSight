@@ -2,7 +2,6 @@ package com.example.insight.activity.mapActivity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -28,12 +27,14 @@ import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.insight.R;
 import com.example.insight.activity.UserProfile;
+import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.VisitedLocation;
 import com.example.insight.entity.enums.LocationType;
@@ -73,6 +74,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseReference database;
     private LocationManager locationManager;
     private Set<String> visitedLocations;
+    private final Integer REWARD_POINTS_FOR_COMMENTS = 15;
 
     private Button userProfileButton;
     private Button mapViewButton;
@@ -83,6 +85,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseReference databaseReference;
 
     private Dialog locationDialog;
+    private Dialog leaveCommentDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +102,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         getVisitedLocationsOfUser();
         locationDialog = new Dialog(this);
+        leaveCommentDialog = new Dialog(this);
         userProfileButton = findViewById(R.id.userProfileButton);
         mapViewButton = findViewById(R.id.mapViewButton);
 
@@ -189,19 +193,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     return;
                 }
 
-//                } else {
-//                    ActivityCompat.requestPermissions(MapsActivity.this, new String[] {
-//                                    ACCESS_FINE_LOCATION,
-//                                    Manifest.permission.ACCESS_COARSE_LOCATION },
-//                            12);
-//                    return;
-//                }
 
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
                 android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 currentUserLocation = currentLocation;
-                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
@@ -263,11 +259,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /**
+     * method displays pop-up dialog of location when marker is clicked
+     * @param marker
+     */
     public void ShowPopUpLocation(final Marker marker){
         TextView locationName;
         TextView locationPoints;
         ImageView locationType;
         Button checkinButton;
+        Button leaveCommentButton;
 
         locationDialog.setContentView(R.layout.pop_up_location);
 
@@ -275,6 +276,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationPoints = locationDialog.findViewById(R.id.location_points);
         locationType = locationDialog.findViewById(R.id.location_type_img);
         checkinButton = locationDialog.findViewById(R.id.check_in_button);
+        leaveCommentButton = locationDialog.findViewById(R.id.comment_option_button);
+
 
         //sets title of location
         locationName.setText(marker.getTitle());
@@ -303,16 +306,99 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Drawable res = getResources().getDrawable(imageResource);
         locationType.setImageDrawable(res);
 
+
+        //checks-in user to the location if he hasn't visited already
+        //and if he is in close proximity to the location
+        //(stores check-in in db)
         checkinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                verifyCheckIn(marker);
+                boolean canCheckIn = isUserAtLocation(marker);
+                if (canCheckIn) {
+                    locationCheckIn(marker);
+                }
             }
         });
+
+        //opens leaveComment dialog only if the user has
+        //previously checked in to the location
+        //(stores comment of location in db)
+        leaveCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(visitedLocations.contains(marker.getTitle())){
+                    leaveCommentPopUp(marker);
+                }
+                else{
+                    Toast.makeText(MapsActivity.this, "You must check-in before \n leaving a comment!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+
 
         locationDialog.show();
     }
 
+    /**
+     * popUp dialog for user to leave comment on location
+     * @param marker
+     */
+    private void leaveCommentPopUp(final Marker marker){
+        Button postCommentButton;
+        final EditText commentField;
+
+        leaveCommentDialog.setContentView(R.layout.pop_up_location_comment);
+        commentField = leaveCommentDialog.findViewById(R.id.commentField);
+        postCommentButton = leaveCommentDialog.findViewById(R.id.postCommentButton);
+
+        postCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String userComment = commentField.getText().toString();
+                if(userComment == null || userComment.equals("")){
+                    Toast.makeText(MapsActivity.this, "Comment can't be empty!", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    storeLocationComment(userComment, marker.getTitle());
+                    updateRewardPointsOfUser(REWARD_POINTS_FOR_COMMENTS);
+                    Toast.makeText(MapsActivity.this,"You won " + REWARD_POINTS_FOR_COMMENTS +
+                            " points!", Toast.LENGTH_LONG).show();
+                    leaveCommentDialog.dismiss();
+                }
+            }
+        });
+
+        leaveCommentDialog.show();
+
+
+    }
+
+    /**
+     * method creates an instance of CommentForLocation entity
+     * and stores it in the database
+     * @param userComment the comment typed in the popUp dialog
+     * @param locationName the name of the location about which the user
+     *                     leaves a comment
+     */
+    private void storeLocationComment(String userComment, String locationName){
+        databaseReference = FirebaseDatabase.getInstance().getReference("locationComments");
+
+        CommentForLocation userCommentLocation = new CommentForLocation();
+        userCommentLocation.setUserComment(userComment);
+        userCommentLocation.setLocationName(locationName);
+
+        String id = databaseReference.push().getKey();
+        userCommentLocation.setId(id);
+        databaseReference.child(userCommentLocation.getId()).setValue(userCommentLocation);
+
+    }
+
+    /**
+     * method retrieves user points of given location
+     * @param locationName
+     * @return
+     */
     private Integer getPointsOfLocation(String locationName){
         for(Location location: this.locations){
             if (location.getTitle().equals(locationName)){
@@ -322,6 +408,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return null;
     }
 
+    /**
+     * method retrieves the type of the location
+     * @param locationName
+     * @return
+     */
     private String getTypeOfLocation(String locationName){
         for(Location location: this.locations){
             if (location.getTitle().equals(locationName)){
@@ -368,6 +459,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return done;
     }
 
+
+    /**
+     * method retrieves all visited locations of current
+     * logged in user and stores them in a set
+     */
     private void getVisitedLocationsOfUser(){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
@@ -379,9 +475,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 visitedLocations = new HashSet<>();
                 for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
-                    Log.d("READ DB VISITED onMapR", childDataSnapshot.child("locationName").getValue().toString());
                     visitedLocations.add(childDataSnapshot.child("locationName").getValue().toString());
-                    Log.d("CUR SIZE OF LIST onMapR", String.valueOf(visitedLocations.size()));
                 }
             }
 
@@ -392,14 +486,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private boolean verifyCheckIn(Marker marker){
+    /**
+     * method checks if the logged in user is in proximity to the location
+     * he desires to check in
+     * @param marker location in which the user wants to check-in
+     * @return
+     */
+    private boolean isUserAtLocation(Marker marker){
         CircleOptions circleOptions = new CircleOptions().center(marker.getPosition()).radius(100000.0);
         float[] distance = new float[2];
 
         android.location.Location.distanceBetween(currentUserLocation.getLatitude(), currentUserLocation.getLongitude(),
                 circleOptions.getCenter().latitude, circleOptions.getCenter().longitude, distance);
-
-        Log.d("SUNT IN FUNCTIA CHECKIN", String.valueOf(visitedLocations.size()));
 
         if (visitedLocations.contains(marker.getTitle())){
             Toast.makeText(this,"You have already checked in!", Toast.LENGTH_LONG).show();
@@ -409,7 +507,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(this,"You cannot check in! \n You must be at the location!", Toast.LENGTH_LONG).show();
             }
             else{
-                locationCheckIn(marker);
                 Toast.makeText(this,"You won " + getPointsOfLocation(marker.getTitle()).toString() +
                         " points!", Toast.LENGTH_LONG).show();
             }
@@ -418,6 +515,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return false;
     }
 
+    /**
+     * method checks in user to the location;
+     * it updates the marker on the map and calls methods
+     * to store the new visited location and update the
+     * reward points of the user
+     * @param marker
+     */
     private void locationCheckIn(Marker marker){
         this.visitedLocations.add(marker.getTitle());
         int height = 100;
@@ -426,18 +530,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Bitmap b=bitmapdraw.getBitmap();
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(smallMarker));
-        addRewardPointsToUser(getPointsOfLocation(marker.getTitle()));
-        addUserLocations(marker.getTitle());
+
+        updateRewardPointsOfUser(getPointsOfLocation(marker.getTitle()));
+        storeNewVisitedLocationOfUser(marker.getTitle());
     }
 
-    private void addRewardPointsToUser(final Integer rewardPoints) {
+    /**
+     * method updates the logged in users' reward points in the db
+     * after he has checked in to a location
+     * @param rewardPoints
+     */
+    private void updateRewardPointsOfUser(final Integer rewardPoints) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference("users");
-        //databaseReference = FirebaseDatabase.getInstance().getReference("users");
-
         databaseReference.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -460,11 +568,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void addUserLocations(String locationName){
+    /**
+     * method creates an instance of class VisitedLocation
+     * sets its fields to the current logged in Users information
+     * and the location he wants to check in
+     * and stores in to the database
+     * @param locationName
+     */
+    private void storeNewVisitedLocationOfUser(String locationName){
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
 
-        //firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("visitedLocations");
 
         VisitedLocation visitedLocation = new VisitedLocation();
