@@ -63,6 +63,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     private GoogleMap mMap;
@@ -108,6 +110,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivity(new Intent(MapsActivity.this, UserProfile.class));
             }
         });
+
+    }
+
+    /**
+     * method makes application wait for location permission to be granted;
+     * if the user doesn't allow those permission, he's brought back to the login
+     * screen
+     * once he allows them, the application continues with the initialization of the map
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        int index = 0;
+        Map<String, Integer> PermissionsMap = new HashMap<>();
+        for (String permission : permissions){
+            PermissionsMap.put(permission, grantResults[index]);
+            index++;
+        }
+
+        if(PermissionsMap.get(ACCESS_FINE_LOCATION) != 0){
+            Toast.makeText(this, "Location permissions are a must", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        else
+        {
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+        }
     }
 
     @Override
@@ -143,30 +178,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 mMap.clear();
 
-                if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
+                if (!(ContextCompat.checkSelfPermission(MapsActivity.this, ACCESS_FINE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED &&
                         ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                                PackageManager.PERMISSION_GRANTED) {
-                    mMap.setMyLocationEnabled(true);
-                    mMap.getUiSettings().setMyLocationButtonEnabled(true);
-                    android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    currentUserLocation = location;
-                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-                } else {
-                    ActivityCompat.requestPermissions(MapsActivity.this, new String[] {
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION },
+                                PackageManager.PERMISSION_GRANTED)) {
+                    ActivityCompat.requestPermissions(MapsActivity.this, new String[]{
+                                    ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION},
                             12);
-                    mMap.setMyLocationEnabled(true);
-                    mMap.getUiSettings().setMyLocationButtonEnabled(true);
-                    android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    currentUserLocation = location;
-                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                    return;
                 }
+
+//                } else {
+//                    ActivityCompat.requestPermissions(MapsActivity.this, new String[] {
+//                                    ACCESS_FINE_LOCATION,
+//                                    Manifest.permission.ACCESS_COARSE_LOCATION },
+//                            12);
+//                    return;
+//                }
+
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                currentUserLocation = currentLocation;
+                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
                 for (Location location : locations) {
                     System.out.println(location.toString());
@@ -221,7 +258,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this,"Error loading map!", Toast.LENGTH_LONG).show();
         }
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
     }
