@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,7 +18,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.method.ScrollingMovementMethod;
@@ -26,6 +29,7 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -48,6 +52,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -55,6 +60,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,9 +91,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference;
+    private StorageReference storageRef;
 
     private Dialog locationDialog;
     private Dialog leaveCommentDialog;
+
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private StorageReference mStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +208,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                //android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                //currentUserLocation = currentLocation;
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
+
+
+                //TODO remove mockup current location and replace with the real one
                 android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                currentLocation.setLatitude(46.7695133);
+                currentLocation.setLongitude(23.5898073);
+
                 currentUserLocation = currentLocation;
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
@@ -269,6 +290,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         ImageView locationType;
         Button checkinButton;
         Button leaveCommentButton;
+        Button takePictureButton;
 
         locationDialog.setContentView(R.layout.pop_up_location);
 
@@ -277,6 +299,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationType = locationDialog.findViewById(R.id.location_type_img);
         checkinButton = locationDialog.findViewById(R.id.check_in_button);
         leaveCommentButton = locationDialog.findViewById(R.id.comment_option_button);
+        takePictureButton = locationDialog.findViewById(R.id.camera_option_button);
 
 
         //sets title of location
@@ -313,7 +336,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         checkinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean canCheckIn = isUserAtLocation(marker);
+                boolean canCheckIn = isUserAtLocation(marker, true);
                 if (canCheckIn) {
                     locationCheckIn(marker);
                 }
@@ -336,9 +359,76 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
+        //user takes pic
+        takePictureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                if(visitedLocations.contains(marker.getTitle()) && isUserAtLocation(marker, false)){
+//                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+//                    }
+
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+            }
+        });
+
 
         locationDialog.show();
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+            Uri uri = data.getData();
+            mStorage = FirebaseStorage.getInstance().getReference();
+
+            StorageReference filePath = mStorage.child(System.currentTimeMillis() + "." + getFileExtension(uri));
+            filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                }
+            });
+
+        }
+    }
+
+    private String getFileExtension(Uri uri){
+        ContentResolver cr = getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cr.getType(uri));
+    }
+
+//    private void storePictureOfLocation(){
+//        //Log.d("STORE PIC METHOD", selectedImageUri.toString());
+//        if(mImageUri != null);
+//        final StorageReference fileReference = storageRef.child(System.currentTimeMillis() + "." + getFileExtension(mImageUri));
+//        databaseReference = FirebaseDatabase.getInstance().getReference("locationPictures");
+//        fileReference.putFile(mImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//            @Override
+//            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+//                    @Override
+//                    public void onSuccess(Uri uri) {
+//                        UserPictureForLocation userPictureForLocation = new UserPictureForLocation();
+//                        userPictureForLocation.setLocationName("LOCATIONNAME");
+//
+//                        userPictureForLocation.setProfileImgName(getPathFromURI(mImageUri).trim());
+//                        userPictureForLocation.setProfileImgUrl(uri.toString());
+//
+//                        String id = databaseReference.push().getKey();
+//                        userPictureForLocation.setId(id);
+//
+//                        databaseReference.child(userPictureForLocation.getId()).setValue(userPictureForLocation);
+//                    }
+//                });
+//            }
+//        });
+//    }
+
 
     /**
      * popUp dialog for user to leave comment on location
@@ -492,7 +582,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param marker location in which the user wants to check-in
      * @return
      */
-    private boolean isUserAtLocation(Marker marker){
+    private boolean isUserAtLocation(Marker marker, boolean showToasters){
+        boolean userIsAtLocation;
         CircleOptions circleOptions = new CircleOptions().center(marker.getPosition()).radius(100000.0);
         float[] distance = new float[2];
 
@@ -500,19 +591,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 circleOptions.getCenter().latitude, circleOptions.getCenter().longitude, distance);
 
         if (visitedLocations.contains(marker.getTitle())){
-            Toast.makeText(this,"You have already checked in!", Toast.LENGTH_LONG).show();
+            if(showToasters){
+                Toast.makeText(this,"You have already checked in!", Toast.LENGTH_LONG).show();
+            }
         }
-        else{
+        //else{
             if(distance[0] > circleOptions.getRadius()){
-                Toast.makeText(this,"You cannot check in! \n You must be at the location!", Toast.LENGTH_LONG).show();
+                if(showToasters){
+                    Toast.makeText(this,"You cannot check in! \n You must be at the location!", Toast.LENGTH_LONG).show();
+                }
+                userIsAtLocation = false;
             }
             else{
-                Toast.makeText(this,"You won " + getPointsOfLocation(marker.getTitle()).toString() +
-                        " points!", Toast.LENGTH_LONG).show();
-            }
+                if(showToasters){
+                    Toast.makeText(this,"You won " + getPointsOfLocation(marker.getTitle()).toString() +
+                            " points!", Toast.LENGTH_LONG).show();
+                }
+                userIsAtLocation = true;
+        //    }
         }
 
-        return false;
+        return userIsAtLocation;
     }
 
     /**

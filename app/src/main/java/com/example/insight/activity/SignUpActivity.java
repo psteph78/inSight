@@ -58,6 +58,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private static final int RESULT_LOAD_IMAGE = 1;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,6 +140,8 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
     public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         new Thread(new Runnable() {
