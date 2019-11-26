@@ -11,12 +11,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Spannable;
@@ -28,9 +32,14 @@ import android.text.style.StyleSpan;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +68,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +77,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.CAMERA;
@@ -79,6 +89,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseReference database;
     private LocationManager locationManager;
     private Set<String> visitedLocations;
+    private List<UserPictureForLocation> allLocationPictures;
+    private List<CommentForLocation> allLocationComments;
     private final Integer REWARD_POINTS_FOR_COMMENTS = 15;
 
     private Button userProfileButton;
@@ -91,6 +103,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Dialog locationDialog;
     private Dialog leaveCommentDialog;
+    private Dialog locationInformationDialog;
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentMarkerName;
@@ -104,14 +117,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.locations = new ArrayList<>();
         this.markers = new ArrayList<>();
         this.visitedLocations = new HashSet<>();
+        this.allLocationComments = new ArrayList<>();
+        this.allLocationPictures = new ArrayList<>();
         this.database = FirebaseDatabase.getInstance().getReference("locations");
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         getVisitedLocationsOfUser();
+        retrieveAllLocationPictures();
+        retrieveAllLocationComments();
         locationDialog = new Dialog(this);
         leaveCommentDialog = new Dialog(this);
+        locationInformationDialog = new Dialog(this);
         userProfileButton = findViewById(R.id.userProfileButton);
         mapViewButton = findViewById(R.id.mapViewButton);
 
@@ -165,6 +183,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         getVisitedLocationsOfUser();
 
+        boolean canContinue = requestUserForPermissionsIfNeeded();
+        if (!canContinue){
+            return;
+        }
 
         database.orderByChild("id").addValueEventListener(new ValueEventListener() {
             @Override
@@ -194,18 +216,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //check if necessary permissions have been granted
                 //if not, return from the method and stop the initialization
                 //of the map until permissions have been granted
-                boolean canContinue = requestUserForPermissionsIfNeeded();
-                if (!canContinue){
-                    return;
-                }
+//                boolean canContinue = requestUserForPermissionsIfNeeded();
+//                if (!canContinue){
+//                    return;
+//                }
 
 
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
+
                 //TODO start
-                //android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                //currentUserLocation = currentLocation;
+//                String locationProvider = LocationManager.GPS_PROVIDER;
+                //android.location.Location currentLocation = locationManager.requestLocationUpdates(locationProvider, 0, 0,  );
+//                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                currentUserLocation = currentLocation;
                 //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
 
                 android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -250,6 +275,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
+                        currentMarkerName = marker.getTitle();
                         ShowPopUpLocation(marker);
                         return true;
                     }
@@ -283,6 +309,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Button checkinButton;
         Button leaveCommentButton;
         Button takePictureButton;
+        Button informationButton;
 
         locationDialog.setContentView(R.layout.pop_up_location);
 
@@ -292,6 +319,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         checkinButton = locationDialog.findViewById(R.id.check_in_button);
         leaveCommentButton = locationDialog.findViewById(R.id.comment_option_button);
         takePictureButton = locationDialog.findViewById(R.id.camera_option_button);
+        informationButton = locationDialog.findViewById(R.id.information_option_button);
 
 
         //sets title of location
@@ -357,7 +385,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 if(visitedLocations.contains(marker.getTitle()) && isUserAtLocation(marker, false)){
-                    currentMarkerName = marker.getTitle();
                     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
@@ -367,8 +394,118 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        //opens information of location popup
+        informationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showLocationInformationPopUp();
+            }
+        });
 
         locationDialog.show();
+    }
+
+    private void showLocationInformationPopUp() {
+        Log.d("COMMENTS SIZE", String.valueOf(allLocationComments.size()));
+        Log.d("PICS SIZE", String.valueOf(allLocationPictures.size()));
+        TextView locationName;
+        TextView locationDescription;
+        LinearLayout locationPictures;
+        LinearLayout locationComments;
+
+        locationInformationDialog.setContentView(R.layout.pop_up_location_information);
+
+        //set title and description of location to ui
+        locationName = locationInformationDialog.findViewById(R.id.locationNameText);
+        locationDescription = locationInformationDialog.findViewById(R.id.locationDescriptionText);
+        locationName.setText(currentMarkerName);
+        locationDescription.setText(getDescriptionOfLocation(currentMarkerName));
+
+        //set comments of location to ui
+        locationComments = locationInformationDialog.findViewById(R.id.locationCommentsView);
+        List<String> locationCommentsList = getCommentsOfGivenLocation(currentMarkerName);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(950, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, 15);
+
+        for (String comment : locationCommentsList) {
+            TextView userComment = new TextView(this);
+            GradientDrawable shape = new GradientDrawable();
+            shape.setCornerRadius(20);
+            shape.setColor(Color.parseColor("#FFFFFF"));
+            userComment.setBackground(shape);
+            userComment.setLayoutParams(params);
+            userComment.setPadding(20, 15, 20, 15);
+            userComment.setText(comment);
+
+            locationComments.addView(userComment);
+        }
+
+
+        //set pictures of location to ui
+        locationPictures = locationInformationDialog.findViewById(R.id.locationPictureView);
+        List<String> locationPictureList = getPicturesOfGivenLocation(currentMarkerName);
+        Log.d("NR PICS OF LOC", String.valueOf(locationPictureList.size()));
+
+
+//        LinearLayout.LayoutParams paramsPics = new LinearLayout.LayoutParams(370, 900);
+//        params.setMargins(0, 0, 0, 15);
+//        LinearLayout pictureRow = new LinearLayout(this);
+//        pictureRow.setOrientation(LinearLayout.HORIZONTAL);
+//        pictureRow.setLayoutParams(paramsPics);
+//        for(int i= 0; i < locationPictureList.size(); i++){
+//            ImageView userPicture = new ImageView(this);
+//            byte[] decodedString = Base64.decode(locationPictureList.get(i), Base64.DEFAULT);
+//            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+//            userPicture.setImageBitmap(Bitmap.createScaledBitmap(decodedByte, 350, 350, false));
+//
+//            if((i+1)%3 == 1){
+//                pictureRow = new LinearLayout(this);
+//                pictureRow.setOrientation(LinearLayout.HORIZONTAL);
+////                //pictureRow.setLayoutParams(params);
+//            }
+//            pictureRow.addView(userPicture);
+//
+//            if((i+1)%3 == 0){
+//                locationPictures.addView(pictureRow);
+//            }
+//        }
+
+        LinearLayout.LayoutParams paramsForPictureRow = new LinearLayout.LayoutParams(1000, 340);
+        LinearLayout pictureRow = new LinearLayout(this);
+
+        LinearLayout.LayoutParams paramsForPicture = new LinearLayout.LayoutParams(330, 330);
+        paramsForPicture.setMargins(8, 0, 0, 0);
+
+        pictureRow.setOrientation(LinearLayout.HORIZONTAL);
+        pictureRow.setLayoutParams(paramsForPictureRow);
+
+        for (int i = 0; i < locationPictureList.size(); i++) {
+
+            ImageView userPicture = new ImageView(this);
+            byte[] decodedString = Base64.decode(locationPictureList.get(i), Base64.DEFAULT);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            userPicture.setImageBitmap(Bitmap.createScaledBitmap(decodedByte, 330, 330, false));
+            userPicture.setLayoutParams(paramsForPicture);
+
+            if (i != 0 && (i + 1) % 3 == 0) {
+                Log.d("FIRST IF", String.valueOf(i));
+                pictureRow.addView(userPicture);
+                locationPictures.addView(pictureRow);
+
+                pictureRow = new LinearLayout(this);
+                pictureRow.setOrientation(LinearLayout.HORIZONTAL);
+                pictureRow.setLayoutParams(paramsForPictureRow);
+            } else if (i == locationPictureList.size() - 1) {
+                Log.d("SECOND IF", String.valueOf(i));
+                pictureRow.addView(userPicture);
+                locationPictures.addView(pictureRow);
+            } else {
+                Log.d("LAST ELSE", String.valueOf(i));
+                pictureRow.addView(userPicture);
+            }
+
+            locationInformationDialog.show();
+        }
     }
 
     private boolean requestUserForPermissionsIfNeeded(){
@@ -490,6 +627,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+
+    /**
+     * method returns description of a given location name
+     */
+    private String getDescriptionOfLocation(String locationName){
+        for(Location location: this.locations){
+            if (location.getTitle().equals(locationName)){
+                return location.getDescription();
+            }
+        }
+        return null;
+    }
+
     /**
      * method retrieves user points of given location
      * @param locationName
@@ -518,42 +668,127 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return null;
     }
 
-    public AtomicBoolean getAllLocations(final AtomicBoolean done){
-        database = FirebaseDatabase.getInstance().getReference("locations");
+//    public AtomicBoolean getAllLocations(final AtomicBoolean done){
+//        database = FirebaseDatabase.getInstance().getReference("locations");
+//
+//        database.orderByChild("id").addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                locations = new ArrayList<>();
+//                for (DataSnapshot entity : dataSnapshot.getChildren()) {
+//                    Location toBuild = new Location();
+//
+//                    toBuild.setId(entity.child("id").getValue().toString());
+//                    toBuild.setTitle(entity.child("title").getValue().toString());
+//                    toBuild.setDescription(entity.child("description").getValue().toString());
+//                    toBuild.setType(LocationType.valueOf((String) entity.child("type").getValue()));
+//                    toBuild.setRewardPoints(Integer.valueOf(entity.child("rewardPoints").getValue().toString()));
+//
+//                    double x = (Double) entity.child("coordinates/latitude").getValue();
+//                    double y = (Double) entity.child("coordinates/longitude").getValue();
+//
+//                    LatLng coordinates = new LatLng(x, y);
+//                    toBuild.setCoordinates(coordinates);
+//
+//                    locations.add(toBuild);
+//                }
+//                done.set(true);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                Log.e("db error", "cancelled", databaseError.toException().getCause());
+//            }
+//        });
+//
+//        return done;
+//    }
 
-        database.orderByChild("id").addValueEventListener(new ValueEventListener() {
+
+    /**
+     * method returns all pictures of a given location
+     */
+    private List<String> getPicturesOfGivenLocation(String locationName){
+        List<String> locationPictures = new ArrayList<>();
+        for(UserPictureForLocation picture: allLocationPictures){
+            if (picture.getLocationName().equals(locationName)){
+                locationPictures.add(picture.getEncodedPicture());
+            }
+        }
+        return locationPictures;
+    }
+
+    /**
+     * method returns all comments of a given location
+     */
+    private List<String> getCommentsOfGivenLocation(String locationName){
+        List<String> locationComments = new ArrayList<>();
+        for(CommentForLocation comment: allLocationComments){
+            if (comment.getLocationName().equals(locationName)){
+                locationComments.add(comment.getUserComment());
+            }
+        }
+        return locationComments;
+    }
+
+
+    /**
+     * method retrieves all pictures of all locations
+     * from the db
+     */
+    private void retrieveAllLocationPictures(){
+        firebaseAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("locationPictures");
+
+
+        databaseReference.orderByChild("id").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                locations = new ArrayList<>();
-                for (DataSnapshot entity : dataSnapshot.getChildren()) {
-                    Location toBuild = new Location();
+                allLocationPictures = new ArrayList<>();
+                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                    UserPictureForLocation locationPicture = new UserPictureForLocation();
+                    locationPicture.setLocationName(childDataSnapshot.child("locationName").getValue().toString());
+                    locationPicture.setEncodedPicture(childDataSnapshot.child("encodedPicture").getValue().toString());
 
-                    toBuild.setId(entity.child("id").getValue().toString());
-                    toBuild.setTitle(entity.child("title").getValue().toString());
-                    toBuild.setDescription(entity.child("description").getValue().toString());
-                    toBuild.setType(LocationType.valueOf((String) entity.child("type").getValue()));
-                    toBuild.setRewardPoints(Integer.valueOf(entity.child("rewardPoints").getValue().toString()));
-
-                    double x = (Double) entity.child("coordinates/latitude").getValue();
-                    double y = (Double) entity.child("coordinates/longitude").getValue();
-
-                    LatLng coordinates = new LatLng(x, y);
-                    toBuild.setCoordinates(coordinates);
-
-                    locations.add(toBuild);
+                    allLocationPictures.add(locationPicture);
                 }
-                done.set(true);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("db error", "cancelled", databaseError.toException().getCause());
+
             }
         });
-
-        return done;
     }
 
+    /**
+     * method retrieves all comments of all locations
+     * from the db
+     */
+    private void retrieveAllLocationComments(){
+        firebaseAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("locationComments");
+
+
+        databaseReference.orderByChild("id").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                allLocationComments = new ArrayList<>();
+                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
+                    CommentForLocation locationComment = new CommentForLocation();
+                    locationComment.setLocationName(childDataSnapshot.child("locationName").getValue().toString());
+                    locationComment.setUserComment(childDataSnapshot.child("userComment").getValue().toString());
+
+                    allLocationComments.add(locationComment);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     /**
      * method retrieves all visited locations of current
