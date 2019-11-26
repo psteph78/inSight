@@ -1,4 +1,4 @@
-package com.example.insight.entity.enums;
+package com.example.insight.entity;
 
 /**
  * class used to store and read pictures uploaded
@@ -7,8 +7,7 @@ package com.example.insight.entity.enums;
 public class UserPictureForLocation {
     private String id;
     private String locationName;
-    private String profileImgName;
-    private String profileImgUrl;
+    private String encodedPicture;
 
     public UserPictureForLocation() {
     }
@@ -29,19 +28,11 @@ public class UserPictureForLocation {
         this.locationName = locationName;
     }
 
-    public String getProfileImgName() {
-        return profileImgName;
+    public String getEncodedPicture() {
+        return encodedPicture;
     }
 
-    public void setProfileImgName(String profileImgName) {
-        this.profileImgName = profileImgName;
-    }
-
-    public String getProfileImgUrl() {
-        return profileImgUrl;
-    }
-
-    public void setProfileImgUrl(String profileImgUrl) {
-        this.profileImgUrl = profileImgUrl;
+    public void setEncodedPicture(String encodedPicture) {
+        this.encodedPicture = encodedPicture;
     }
 }
