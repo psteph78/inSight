@@ -18,12 +18,14 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,6 +40,7 @@ import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.VisitedLocation;
 import com.example.insight.entity.enums.LocationType;
+import com.example.insight.entity.UserPictureForLocation;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -56,6 +59,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +69,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.CAMERA;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
@@ -86,6 +91,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Dialog locationDialog;
     private Dialog leaveCommentDialog;
+
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private String currentMarkerName;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,8 +146,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             index++;
         }
 
-        if(PermissionsMap.get(ACCESS_FINE_LOCATION) != 0){
-            Toast.makeText(this, "Location permissions are a must", Toast.LENGTH_SHORT).show();
+        if(PermissionsMap.get(ACCESS_FINE_LOCATION) != 0 || PermissionsMap.get(CAMERA) != 0){
+            Toast.makeText(this, "Location and camera permissions are a must", Toast.LENGTH_SHORT).show();
             finish();
         }
         else
@@ -153,7 +162,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         this.mMap = googleMap;
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
-        Log.d("db", "reading");
 
         getVisitedLocationsOfUser();
 
@@ -182,21 +190,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 mMap.clear();
 
-                if (!(ContextCompat.checkSelfPermission(MapsActivity.this, ACCESS_FINE_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                                PackageManager.PERMISSION_GRANTED)) {
-                    ActivityCompat.requestPermissions(MapsActivity.this, new String[]{
-                                    ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION},
-                            12);
+
+                //check if necessary permissions have been granted
+                //if not, return from the method and stop the initialization
+                //of the map until permissions have been granted
+                boolean canContinue = requestUserForPermissionsIfNeeded();
+                if (!canContinue){
                     return;
                 }
 
 
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+                //TODO start
+                //android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                //currentUserLocation = currentLocation;
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
+
                 android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                currentLocation.setLatitude(46.7695133);
+                currentLocation.setLongitude(23.5898073);
+                //TODO end -> remove mockup current location and replace with the real one up above
+
                 currentUserLocation = currentLocation;
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
@@ -213,12 +229,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     //already visited locations will be marked with blue icons
                     if(visitedLocations.contains(location.getTitle())){
                         bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.applogo);
-                        Log.d("VISITED LOCATION BLUE", String.valueOf(visitedLocations.size()));
                     }
                     //unvisited location will be marked with pink icons
                     else{
                         bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.unvisited);
-                        Log.d("UNVISITED LOCATION PINK", String.valueOf(visitedLocations.size()));
                     }
 
                     Bitmap b=bitmapdraw.getBitmap();
@@ -236,7 +250,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
-                        Log.d("Clicked location", "LOCATION MARKER CLICKED");
                         ShowPopUpLocation(marker);
                         return true;
                     }
@@ -269,6 +282,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         ImageView locationType;
         Button checkinButton;
         Button leaveCommentButton;
+        Button takePictureButton;
 
         locationDialog.setContentView(R.layout.pop_up_location);
 
@@ -277,6 +291,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationType = locationDialog.findViewById(R.id.location_type_img);
         checkinButton = locationDialog.findViewById(R.id.check_in_button);
         leaveCommentButton = locationDialog.findViewById(R.id.comment_option_button);
+        takePictureButton = locationDialog.findViewById(R.id.camera_option_button);
 
 
         //sets title of location
@@ -313,7 +328,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         checkinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean canCheckIn = isUserAtLocation(marker);
+                boolean canCheckIn = isUserAtLocation(marker, true);
                 if (canCheckIn) {
                     locationCheckIn(marker);
                 }
@@ -336,8 +351,86 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
+        //we create a new intent to open the camera
+        //the taken picture will be stored automatically in the database
+        takePictureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //TODO
+                currentMarkerName = marker.getTitle();
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        });
+
 
         locationDialog.show();
+    }
+
+    private boolean requestUserForPermissionsIfNeeded(){
+        //check if necessary permission have been granted, if not request them from the user
+        //verify if location permission is granted
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                        PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.CAMERA},
+                    12);
+            return false;
+        }
+        //verify if camera permission is granted
+        else if(ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED){
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{
+                            Manifest.permission.CAMERA},
+                    12);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * overridden method catches the result of the camera intent
+     * extracts a bitmap out of the returned data (the captured image)
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            encodeBitmapAndSaveToFirebase(imageBitmap);
+        }
+    }
+
+    /**
+     * method encodes a bitmap and creates a new entity of UserPictureForLocation
+     * and persists this into the database
+     * @param bitmap
+     */
+    public void encodeBitmapAndSaveToFirebase(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+
+        databaseReference = FirebaseDatabase.getInstance().getReference("locationPictures");
+        UserPictureForLocation userPictureForLocation = new UserPictureForLocation();
+        userPictureForLocation.setLocationName(this.currentMarkerName);
+
+        userPictureForLocation.setEncodedPicture(imageEncoded);
+
+        String id = databaseReference.push().getKey();
+        userPictureForLocation.setId(id);
+
+        databaseReference.child(userPictureForLocation.getId()).setValue(userPictureForLocation);
     }
 
     /**
@@ -444,7 +537,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LatLng coordinates = new LatLng(x, y);
                     toBuild.setCoordinates(coordinates);
 
-                    Log.d("NEW LOCATION ADDED", toBuild.toString());
                     locations.add(toBuild);
                 }
                 done.set(true);
@@ -492,7 +584,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param marker location in which the user wants to check-in
      * @return
      */
-    private boolean isUserAtLocation(Marker marker){
+    private boolean isUserAtLocation(Marker marker, boolean showToasters){
+        boolean userIsAtLocation;
         CircleOptions circleOptions = new CircleOptions().center(marker.getPosition()).radius(100000.0);
         float[] distance = new float[2];
 
@@ -500,19 +593,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 circleOptions.getCenter().latitude, circleOptions.getCenter().longitude, distance);
 
         if (visitedLocations.contains(marker.getTitle())){
-            Toast.makeText(this,"You have already checked in!", Toast.LENGTH_LONG).show();
+            if(showToasters){
+                Toast.makeText(this,"You have already checked in!", Toast.LENGTH_LONG).show();
+            }
         }
-        else{
+        //else{
             if(distance[0] > circleOptions.getRadius()){
-                Toast.makeText(this,"You cannot check in! \n You must be at the location!", Toast.LENGTH_LONG).show();
+                if(showToasters){
+                    Toast.makeText(this,"You cannot check in! \n You must be at the location!", Toast.LENGTH_LONG).show();
+                }
+                userIsAtLocation = false;
             }
             else{
-                Toast.makeText(this,"You won " + getPointsOfLocation(marker.getTitle()).toString() +
-                        " points!", Toast.LENGTH_LONG).show();
-            }
+                if(showToasters){
+                    Toast.makeText(this,"You won " + getPointsOfLocation(marker.getTitle()).toString() +
+                            " points!", Toast.LENGTH_LONG).show();
+                }
+                userIsAtLocation = true;
+        //    }
         }
 
-        return false;
+        return userIsAtLocation;
     }
 
     /**
