@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="385dp"
+    android:layout_height="710dp"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:background="#E6EDEF">
+
+    <TextView
+        android:id="@+id/locationNameText"
+        android:layout_width="365dp"
+        android:layout_height="65dp"
+        android:fontFamily="@font/playfair_display"
+        android:textColor="#176878"
+        android:textStyle="bold"
+        android:textSize="28sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/locationDescriptionText"
+        android:layout_width="365dp"
+        android:layout_height="115dp"
+        android:fontFamily="@font/playfair_display"
+        android:textColor="#696969"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/galleryText"
+        android:layout_width="365dp"
+        android:layout_height="55dp"
+        android:text="@string/gallery"
+        android:fontFamily="@font/playfair_display"
+        android:textColor="#176878"
+        android:textStyle="bold"
+        android:textSize="23sp"
+        android:layout_gravity="center"/>
+
+    <ScrollView
+        android:layout_width="365dp"
+        android:layout_height="280dp"
+        android:layout_gravity="center">
+
+        <LinearLayout
+            android:id="@+id/locationPictureView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/commentsText"
+        android:layout_width="365dp"
+        android:layout_height="55dp"
+        android:text="@string/comments"
+        android:fontFamily="@font/playfair_display"
+        android:textColor="#176878"
+        android:textStyle="bold"
+        android:textSize="23sp"
+        android:layout_gravity="center"/>
+
+    <ScrollView
+        android:layout_width="365dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:id="@+id/locationCommentsView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+</LinearLayout>

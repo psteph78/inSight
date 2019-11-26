@@ -45,7 +45,6 @@ import android.widget.Toast;
 
 import com.example.insight.R;
 import com.example.insight.activity.UserProfile;
-import com.example.insight.activity.utils.ImageAdapter;
 import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.VisitedLocation;
@@ -184,6 +183,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         getVisitedLocationsOfUser();
 
+        boolean canContinue = requestUserForPermissionsIfNeeded();
+        if (!canContinue){
+            return;
+        }
 
         database.orderByChild("id").addValueEventListener(new ValueEventListener() {
             @Override
@@ -213,18 +216,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //check if necessary permissions have been granted
                 //if not, return from the method and stop the initialization
                 //of the map until permissions have been granted
-                boolean canContinue = requestUserForPermissionsIfNeeded();
-                if (!canContinue){
-                    return;
-                }
+//                boolean canContinue = requestUserForPermissionsIfNeeded();
+//                if (!canContinue){
+//                    return;
+//                }
 
 
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
+
                 //TODO start
-                //android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                //currentUserLocation = currentLocation;
+//                String locationProvider = LocationManager.GPS_PROVIDER;
+                //android.location.Location currentLocation = locationManager.requestLocationUpdates(locationProvider, 0, 0,  );
+//                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                currentUserLocation = currentLocation;
                 //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
 
                 android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -400,6 +406,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void showLocationInformationPopUp() {
+        Log.d("COMMENTS SIZE", String.valueOf(allLocationComments.size()));
+        Log.d("PICS SIZE", String.valueOf(allLocationPictures.size()));
         TextView locationName;
         TextView locationDescription;
         LinearLayout locationPictures;
@@ -414,70 +422,90 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationDescription.setText(getDescriptionOfLocation(currentMarkerName));
 
         //set comments of location to ui
-        //LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        //params.setMargins(0, 0, 0, 15);
         locationComments = locationInformationDialog.findViewById(R.id.locationCommentsView);
-        //locationComments.setLayoutParams(params);
         List<String> locationCommentsList = getCommentsOfGivenLocation(currentMarkerName);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1200, LinearLayout.LayoutParams.WRAP_CONTENT);
-        //params.setMarginStart(20);
-
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(950, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 0, 0, 15);
-        for(String comment: locationCommentsList){
-            TextView userComment = new TextView(this);
-            //userComment.setLayoutParams(Params1);
-            //background.setBackground(ContextCompat.getDrawable(this, R.drawable.rounded_edit_text));
 
-            //userComment.setBackgroundColor(Color.parseColor("#FFFFFF"));
-            GradientDrawable shape =  new GradientDrawable();
+        for (String comment : locationCommentsList) {
+            TextView userComment = new TextView(this);
+            GradientDrawable shape = new GradientDrawable();
             shape.setCornerRadius(20);
             shape.setColor(Color.parseColor("#FFFFFF"));
             userComment.setBackground(shape);
             userComment.setLayoutParams(params);
-
-            //userComment.setTextColor(0);
+            userComment.setPadding(20, 15, 20, 15);
             userComment.setText(comment);
 
             locationComments.addView(userComment);
-
         }
+
 
         //set pictures of location to ui
         locationPictures = locationInformationDialog.findViewById(R.id.locationPictureView);
         List<String> locationPictureList = getPicturesOfGivenLocation(currentMarkerName);
+        Log.d("NR PICS OF LOC", String.valueOf(locationPictureList.size()));
 
 
-//        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//        params.setMargins(0, 0, 0, 0);
+//        LinearLayout.LayoutParams paramsPics = new LinearLayout.LayoutParams(370, 900);
+//        params.setMargins(0, 0, 0, 15);
+//        LinearLayout pictureRow = new LinearLayout(this);
+//        pictureRow.setOrientation(LinearLayout.HORIZONTAL);
+//        pictureRow.setLayoutParams(paramsPics);
+//        for(int i= 0; i < locationPictureList.size(); i++){
+//            ImageView userPicture = new ImageView(this);
+//            byte[] decodedString = Base64.decode(locationPictureList.get(i), Base64.DEFAULT);
+//            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+//            userPicture.setImageBitmap(Bitmap.createScaledBitmap(decodedByte, 350, 350, false));
+//
+//            if((i+1)%3 == 1){
+//                pictureRow = new LinearLayout(this);
+//                pictureRow.setOrientation(LinearLayout.HORIZONTAL);
+////                //pictureRow.setLayoutParams(params);
+//            }
+//            pictureRow.addView(userPicture);
+//
+//            if((i+1)%3 == 0){
+//                locationPictures.addView(pictureRow);
+//            }
+//        }
 
+        LinearLayout.LayoutParams paramsForPictureRow = new LinearLayout.LayoutParams(1000, 340);
         LinearLayout pictureRow = new LinearLayout(this);
+
+        LinearLayout.LayoutParams paramsForPicture = new LinearLayout.LayoutParams(330, 330);
+        paramsForPicture.setMargins(8, 0, 0, 0);
+
         pictureRow.setOrientation(LinearLayout.HORIZONTAL);
-        //pictureRow.setLayoutParams(params);
-        for(int i= 0; i < locationPictureList.size(); i++){
+        pictureRow.setLayoutParams(paramsForPictureRow);
+
+        for (int i = 0; i < locationPictureList.size(); i++) {
+
             ImageView userPicture = new ImageView(this);
             byte[] decodedString = Base64.decode(locationPictureList.get(i), Base64.DEFAULT);
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-            userPicture.setImageBitmap(Bitmap.createScaledBitmap(decodedByte, 350, 350, false));
+            userPicture.setImageBitmap(Bitmap.createScaledBitmap(decodedByte, 330, 330, false));
+            userPicture.setLayoutParams(paramsForPicture);
 
-            if((i+1)%3 == 1){
+            if (i != 0 && (i + 1) % 3 == 0) {
+                Log.d("FIRST IF", String.valueOf(i));
+                pictureRow.addView(userPicture);
+                locationPictures.addView(pictureRow);
+
                 pictureRow = new LinearLayout(this);
                 pictureRow.setOrientation(LinearLayout.HORIZONTAL);
-                //pictureRow.setLayoutParams(params);
-            }
-            pictureRow.addView(userPicture);
-
-            if((i+1)%3 == 0){
+                pictureRow.setLayoutParams(paramsForPictureRow);
+            } else if (i == locationPictureList.size() - 1) {
+                Log.d("SECOND IF", String.valueOf(i));
+                pictureRow.addView(userPicture);
                 locationPictures.addView(pictureRow);
+            } else {
+                Log.d("LAST ELSE", String.valueOf(i));
+                pictureRow.addView(userPicture);
             }
 
-
-//            pictures.add(userPicture);
-//            locationPictures.addView(userPicture);
+            locationInformationDialog.show();
         }
-
-
-        locationInformationDialog.show();
     }
 
     private boolean requestUserForPermissionsIfNeeded(){
