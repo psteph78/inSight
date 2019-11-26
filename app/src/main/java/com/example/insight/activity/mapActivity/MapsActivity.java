@@ -92,6 +92,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private List<UserPictureForLocation> allLocationPictures;
     private List<CommentForLocation> allLocationComments;
     private final Integer REWARD_POINTS_FOR_COMMENTS = 15;
+    private final Integer REWARD_POINTS_FOR_PICTURES = 20;
 
     private Button userProfileButton;
     private Button mapViewButton;
@@ -571,6 +572,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         userPictureForLocation.setId(id);
 
         databaseReference.child(userPictureForLocation.getId()).setValue(userPictureForLocation);
+
+        updateRewardPointsOfUser(REWARD_POINTS_FOR_PICTURES);
+        Toast.makeText(MapsActivity.this,"You won " + REWARD_POINTS_FOR_PICTURES +
+                " points!", Toast.LENGTH_LONG).show();
+
     }
 
     /**
