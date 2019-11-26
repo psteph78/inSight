@@ -221,8 +221,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     System.out.println(location.toString());
                     LatLng coordinates = location.getCoordinates();
 
-                    int height = 100;
-                    int width = 100;
+                    int height = 120;
+                    int width = 120;
                     BitmapDrawable bitmapdraw;
 
 
