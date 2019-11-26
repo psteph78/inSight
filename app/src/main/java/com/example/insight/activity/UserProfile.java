@@ -82,8 +82,6 @@ public class UserProfile extends AppCompatActivity {
         secondEntry.setVisibility(View.INVISIBLE);
         thirdEntry.setVisibility(View.INVISIBLE);
 
-        //getVisitedLocationsOfUser();
-
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
         firebaseAuth = FirebaseAuth.getInstance();
@@ -95,15 +93,11 @@ public class UserProfile extends AppCompatActivity {
                 visitedLocations = new ArrayList<>();
                 for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
                     VisitedLocation visitedLocation = new VisitedLocation();
-                    Log.d("READ DB VISITED onMapR", childDataSnapshot.child("locationName").getValue().toString());
                     visitedLocation.setLocationName(childDataSnapshot.child("locationName").getValue().toString());
                     visitedLocation.setPoints(Integer.valueOf(childDataSnapshot.child("points").getValue().toString()));
 
-                    Log.d("POINTS OF VISITED LOC", visitedLocation.getPoints().toString());
                     visitedLocations.add(visitedLocation);
-                    Log.d("CUR SIZE OF LIST onMapR", String.valueOf(visitedLocations.size()));
                 }
-
                 showVisitedLocationsInUi();
             }
 
@@ -195,7 +189,6 @@ public class UserProfile extends AppCompatActivity {
     }
 
     private void addLocationPointsToUI(TextView locationPoints, String rewardPoints){
-        Log.d("REWARD PTS", rewardPoints);
         Spannable nrPoints = new SpannableString(rewardPoints);
         nrPoints.setSpan(new ForegroundColorSpan(Color.rgb(23,104,120)), 0, nrPoints.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         nrPoints.setSpan(new RelativeSizeSpan(1.2f), 0, nrPoints.length(),
@@ -211,31 +204,4 @@ public class UserProfile extends AppCompatActivity {
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         locationPoints.append(points);
     }
-
-//    private void getVisitedLocationsOfUser(){
-//        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-//        final String email = currentUser.getEmail();
-//        firebaseAuth = FirebaseAuth.getInstance();
-//        databaseReference = FirebaseDatabase.getInstance().getReference("visitedLocations");
-//
-//        databaseReference.orderByChild("userEmail").equalTo(email).addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                visitedLocations = new ArrayList<>();
-//                for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
-//                    VisitedLocation visitedLocation = new VisitedLocation();
-//                    Log.d("READ DB VISITED onMapR", childDataSnapshot.child("locationName").getValue().toString());
-//                    visitedLocation.setLocationName(childDataSnapshot.child("locationName").getValue().toString());
-//                    visitedLocation.setPoints(Integer.valueOf(childDataSnapshot.child("points").getValue().toString()));
-//                    visitedLocations.add(visitedLocation);
-//                    Log.d("CUR SIZE OF LIST onMapR", String.valueOf(visitedLocations.size()));
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
 }
