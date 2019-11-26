@@ -356,11 +356,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //TODO
-                currentMarkerName = marker.getTitle();
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                if(visitedLocations.contains(marker.getTitle()) && isUserAtLocation(marker, false)){
+                    currentMarkerName = marker.getTitle();
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                }
+                else{
+                    Toast.makeText(MapsActivity.this, "You must check-in and be at the location \n to post a picture!", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
