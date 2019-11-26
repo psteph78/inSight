@@ -24,7 +24,7 @@
         android:layout_gravity="center"
         android:background="@drawable/roundedbutton"
         android:fontFamily="@font/montserrat"
+        android:text="@string/post_comment"
         android:textAllCaps="false"
-        android:textColor="#FFFFFF"
-        tools:text="@string/post_comment" />
+        android:textColor="#FFFFFF" />
 </LinearLayout>
