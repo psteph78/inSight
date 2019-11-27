@@ -235,6 +235,7 @@ public class UserProfile extends AppCompatActivity {
         logOutView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                userOptionsDialog.dismiss();
                 showLogOutWarning();
             }
         });
