@@ -342,6 +342,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         logOutView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                userOptionsDialog.dismiss();
                 showLogOutWarning();
             }
         });
