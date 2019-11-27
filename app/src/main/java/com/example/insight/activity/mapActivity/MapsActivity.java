@@ -89,9 +89,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final Integer REWARD_POINTS_FOR_COMMENTS = 15;
     private final Integer REWARD_POINTS_FOR_PICTURES = 20;
 
-    private Button userProfileButton;
-    private Button mapViewButton;
-
     private android.location.Location currentUserLocation;
 
     private FirebaseAuth firebaseAuth;
@@ -105,9 +102,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentMarkerName;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,15 +127,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         userOptionsDialog = new Dialog(this);
         logOutDialog = new Dialog(this);
 
-        userProfileButton = findViewById(R.id.userProfileButton);
-        mapViewButton = findViewById(R.id.mapViewButton);
+        Button userProfileButton = findViewById(R.id.userProfileButton);
+        Button mapViewButton = findViewById(R.id.mapViewButton);
 
         mapViewButton.setVisibility(View.INVISIBLE);
 
         userProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(MapsActivity.this, UserProfile.class));
                 showUserOptionMenu();
             }
         });
@@ -215,15 +208,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
                 mMap.clear();
-
-
-                //check if necessary permissions have been granted
-                //if not, return from the method and stop the initialization
-                //of the map until permissions have been granted
-//                boolean canContinue = requestUserForPermissionsIfNeeded();
-//                if (!canContinue){
-//                    return;
-//                }
 
 
                 mMap.setMyLocationEnabled(true);
@@ -530,7 +514,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //set pictures of location to ui
         locationPictures = locationInformationDialog.findViewById(R.id.locationPictureView);
         List<String> locationPictureList = getPicturesOfGivenLocation(currentMarkerName);
-        Log.d("NR PICS OF LOC", String.valueOf(locationPictureList.size()));
 
         LinearLayout.LayoutParams paramsForPictureRow = new LinearLayout.LayoutParams(1000, 340);
         LinearLayout pictureRow = new LinearLayout(this);
@@ -550,7 +533,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             userPicture.setLayoutParams(paramsForPicture);
 
             if (i != 0 && (i + 1) % 3 == 0) {
-                Log.d("FIRST IF", String.valueOf(i));
                 pictureRow.addView(userPicture);
                 locationPictures.addView(pictureRow);
 
@@ -558,11 +540,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 pictureRow.setOrientation(LinearLayout.HORIZONTAL);
                 pictureRow.setLayoutParams(paramsForPictureRow);
             } else if (i == locationPictureList.size() - 1) {
-                Log.d("SECOND IF", String.valueOf(i));
                 pictureRow.addView(userPicture);
                 locationPictures.addView(pictureRow);
             } else {
-                Log.d("LAST ELSE", String.valueOf(i));
                 pictureRow.addView(userPicture);
             }
         }
@@ -734,42 +714,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return null;
     }
-
-//    public AtomicBoolean getAllLocations(final AtomicBoolean done){
-//        database = FirebaseDatabase.getInstance().getReference("locations");
-//
-//        database.orderByChild("id").addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                locations = new ArrayList<>();
-//                for (DataSnapshot entity : dataSnapshot.getChildren()) {
-//                    Location toBuild = new Location();
-//
-//                    toBuild.setId(entity.child("id").getValue().toString());
-//                    toBuild.setTitle(entity.child("title").getValue().toString());
-//                    toBuild.setDescription(entity.child("description").getValue().toString());
-//                    toBuild.setType(LocationType.valueOf((String) entity.child("type").getValue()));
-//                    toBuild.setRewardPoints(Integer.valueOf(entity.child("rewardPoints").getValue().toString()));
-//
-//                    double x = (Double) entity.child("coordinates/latitude").getValue();
-//                    double y = (Double) entity.child("coordinates/longitude").getValue();
-//
-//                    LatLng coordinates = new LatLng(x, y);
-//                    toBuild.setCoordinates(coordinates);
-//
-//                    locations.add(toBuild);
-//                }
-//                done.set(true);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//                Log.e("db error", "cancelled", databaseError.toException().getCause());
-//            }
-//        });
-//
-//        return done;
-//    }
 
 
     /**
