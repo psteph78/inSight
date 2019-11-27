@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="250dp"
+    android:layout_height="135dp"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:fontFamily="@font/montserrat"
+        android:padding="20dp"
+        android:text="@string/logoutWarning"
+        android:textAlignment="center"
+        android:textColor="#176878"
+        android:textSize="17sp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cancelBtn"
+            android:layout_width="90dp"
+            android:layout_height="35dp"
+            android:layout_gravity="start"
+            android:background="@drawable/roundedbutton"
+            android:fontFamily="@font/montserrat"
+            android:text="@string/cancel"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/logoutBtn"
+            android:layout_width="95dp"
+            android:layout_height="35dp"
+            android:layout_gravity="end"
+            android:background="@drawable/roundedbutton"
+            android:fontFamily="@font/montserrat"
+            android:text="@string/logout"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF" />
+    </FrameLayout>
+</LinearLayout>

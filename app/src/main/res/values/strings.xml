@@ -17,4 +17,9 @@
     <string name="write_your_comment_here">Write your comment here …</string>
     <string name="gallery">Gallery</string>
     <string name="comments">Comments</string>
+    <string name="your_profile">Your Profile</string>
+    <string name="exchange_points">Exchange Points</string>
+    <string name="cancel">Cancel</string>
+    <string name="logout">Logout</string>
+    <string name="logoutWarning">Are you sure you want \nto log out?</string>
 </resources>
