@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="user_options">
+        <item>View Profile</item>
+        <item>Exchange Points</item>
+        <item>Log Out</item>
+    </string-array>
+
+</resources>

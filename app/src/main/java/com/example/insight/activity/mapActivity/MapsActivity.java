@@ -2,6 +2,7 @@ package com.example.insight.activity.mapActivity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -29,10 +30,13 @@ import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.transition.Visibility;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
@@ -40,6 +44,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -108,6 +113,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentMarkerName;
+    //AppCompatSpinner userOptions;
+    private Spinner userOptions;
 
 
     @Override
@@ -140,8 +147,50 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MapsActivity.this, UserProfile.class));
+                //userOptions.setVisibility(View.VISIBLE);
+                userOptions.setVisibility(Visibility.MODE_IN);
             }
         });
+
+        userOptions = (Spinner) findViewById(R.id.user_options_spinner);
+        List<String> categories = new ArrayList<String>();
+        categories.add("View Profile");
+        categories.add("Exchange Points");
+        categories.add("Log Out");
+
+        // Create an ArrayAdapter using the string array and a default spinner
+        ArrayAdapter<CharSequence> staticAdapter = ArrayAdapter
+                .createFromResource(this, R.array.user_options,
+                        android.R.layout.simple_spinner_item);
+//
+        // Specify the layout to use when the list of choices appears
+        staticAdapter
+                .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//
+        // Apply the adapter to the spinner
+        userOptions.setAdapter(staticAdapter);
+
+//        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+//                R.layout.layout_spinner_item, categories);
+//        dataAdapter.setDropDownViewResource(R.layout.layout_spinner_item);
+//
+        //userOptions.setAdapter(dataAdapter);
+        userOptions.setSelection(0);
+
+        userOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
+                String item = parent.getItemAtPosition(position).toString();
+                //Log.d(TAG, item);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        userOptions.setVisibility(View.INVISIBLE);
 
     }
 
