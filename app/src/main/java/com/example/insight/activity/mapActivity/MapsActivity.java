@@ -48,7 +48,6 @@ import com.example.insight.entity.Location;
 import com.example.insight.entity.PictureForLocation;
 import com.example.insight.entity.VisitedLocation;
 import com.example.insight.entity.enums.LocationType;
-import com.example.insight.entity.UserPictureForLocation;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -676,11 +675,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      *                     leaves a comment
      */
     private void storeLocationComment(String userComment, String locationName){
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String email = currentUser.getEmail();
         databaseReference = FirebaseDatabase.getInstance().getReference("locationComments");
 
         CommentForLocation userCommentLocation = new CommentForLocation();
         userCommentLocation.setUserComment(userComment);
         userCommentLocation.setLocationName(locationName);
+        userCommentLocation.setUserEmail(email);
 
         String id = databaseReference.push().getKey();
         userCommentLocation.setId(id);
