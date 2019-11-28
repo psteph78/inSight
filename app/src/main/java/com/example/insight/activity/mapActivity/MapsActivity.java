@@ -42,6 +42,7 @@ import android.widget.Toast;
 import com.example.insight.R;
 import com.example.insight.activity.MainActivity;
 import com.example.insight.activity.userActivities.UserComments;
+import com.example.insight.activity.userActivities.UserPictures;
 import com.example.insight.activity.userActivities.UserProfile;
 import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
@@ -295,6 +296,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void showUserOptionMenu(){
         TextView userProfileView;
+        TextView userPicturesView;
         TextView userCommentsView;
         TextView exchangePointsView;
         TextView logOutView;
@@ -310,6 +312,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         userProfileView = userOptionsDialog.findViewById(R.id.userProfileBtn);
         userCommentsView = userOptionsDialog.findViewById(R.id.userCommentsBtn);
+        userPicturesView = userOptionsDialog.findViewById(R.id.userPicturesBtn);
         exchangePointsView = userOptionsDialog.findViewById(R.id.exchangePointsBtn);
         logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
 
@@ -327,6 +330,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        userPicturesView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapsActivity.this, UserPictures.class));
+            }
+        });
 
         //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
         exchangePointsView.setOnClickListener(new View.OnClickListener() {
@@ -616,9 +625,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String email = currentUser.getEmail();
+
         databaseReference = FirebaseDatabase.getInstance().getReference("locationPictures");
         PictureForLocation userPictureForLocation = new PictureForLocation();
         userPictureForLocation.setLocationName(this.currentMarkerName);
+        userPictureForLocation.setUserEmail(email);
 
         userPictureForLocation.setEncodedPicture(imageEncoded);
 
