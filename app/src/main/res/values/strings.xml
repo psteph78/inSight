@@ -17,10 +17,11 @@
     <string name="write_your_comment_here">Write your comment here …</string>
     <string name="gallery">Gallery</string>
     <string name="comments">Comments</string>
-    <string name="your_profile">My Profile Profile</string>
+    <string name="your_profile">My Profile</string>
     <string name="exchange_points">Exchange Points</string>
     <string name="cancel">Cancel</string>
     <string name="logout">Logout</string>
     <string name="logoutWarning">Are you sure you want \nto log out?</string>
     <string name="my_comments">My Comments</string>
+    <string name="my_pictures">My Pictures</string>
 </resources>

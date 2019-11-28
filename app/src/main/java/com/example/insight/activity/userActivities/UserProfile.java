@@ -212,6 +212,7 @@ public class UserProfile extends AppCompatActivity {
         TextView exchangePointsView;
         TextView logOutView;
         TextView userCommentsView;
+        TextView userPicturesView;
 
         userOptionsDialog.setContentView(R.layout.user_options_menu);
         WindowManager.LayoutParams wmlp = userOptionsDialog.getWindow().getAttributes();
@@ -225,6 +226,7 @@ public class UserProfile extends AppCompatActivity {
         exchangePointsView = userOptionsDialog.findViewById(R.id.exchangePointsBtn);
         logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
         userCommentsView = userOptionsDialog.findViewById(R.id.userCommentsBtn);
+        userPicturesView = userOptionsDialog.findViewById(R.id.userPicturesBtn);
 
 
         //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
@@ -239,6 +241,13 @@ public class UserProfile extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(UserProfile.this, UserComments.class));
+            }
+        });
+
+        userPicturesView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(UserProfile.this, UserPictures.class));
             }
         });
 
