@@ -45,6 +45,7 @@ import com.example.insight.activity.userActivities.UserComments;
 import com.example.insight.activity.userActivities.UserProfile;
 import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
+import com.example.insight.entity.PictureForLocation;
 import com.example.insight.entity.VisitedLocation;
 import com.example.insight.entity.enums.LocationType;
 import com.example.insight.entity.UserPictureForLocation;
@@ -85,7 +86,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DatabaseReference database;
     private LocationManager locationManager;
     private Set<String> visitedLocations;
-    private List<UserPictureForLocation> allLocationPictures;
+    private List<PictureForLocation> allLocationPictures;
     private List<CommentForLocation> allLocationComments;
     private final Integer REWARD_POINTS_FOR_COMMENTS = 15;
     private final Integer REWARD_POINTS_FOR_PICTURES = 20;
@@ -615,7 +616,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
         databaseReference = FirebaseDatabase.getInstance().getReference("locationPictures");
-        UserPictureForLocation userPictureForLocation = new UserPictureForLocation();
+        PictureForLocation userPictureForLocation = new PictureForLocation();
         userPictureForLocation.setLocationName(this.currentMarkerName);
 
         userPictureForLocation.setEncodedPicture(imageEncoded);
@@ -735,7 +736,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     private List<String> getPicturesOfGivenLocation(String locationName){
         List<String> locationPictures = new ArrayList<>();
-        for(UserPictureForLocation picture: allLocationPictures){
+        for(PictureForLocation picture: allLocationPictures){
             if (picture.getLocationName().equals(locationName)){
                 locationPictures.add(picture.getEncodedPicture());
             }
@@ -771,7 +772,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 allLocationPictures = new ArrayList<>();
                 for (DataSnapshot childDataSnapshot : dataSnapshot.getChildren()){
-                    UserPictureForLocation locationPicture = new UserPictureForLocation();
+                    PictureForLocation locationPicture = new PictureForLocation();
                     locationPicture.setLocationName(childDataSnapshot.child("locationName").getValue().toString());
                     locationPicture.setEncodedPicture(childDataSnapshot.child("encodedPicture").getValue().toString());
 
