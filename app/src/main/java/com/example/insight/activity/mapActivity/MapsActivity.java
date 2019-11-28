@@ -2,7 +2,6 @@ package com.example.insight.activity.mapActivity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -16,12 +15,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Spannable;
@@ -30,26 +27,22 @@ import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.transition.Visibility;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.insight.R;
-import com.example.insight.activity.UserProfile;
+import com.example.insight.activity.MainActivity;
+import com.example.insight.activity.userActivities.UserComments;
+import com.example.insight.activity.userActivities.UserProfile;
 import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.VisitedLocation;
@@ -72,8 +65,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -99,9 +90,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final Integer REWARD_POINTS_FOR_COMMENTS = 15;
     private final Integer REWARD_POINTS_FOR_PICTURES = 20;
 
-    private Button userProfileButton;
-    private Button mapViewButton;
-
     private android.location.Location currentUserLocation;
 
     private FirebaseAuth firebaseAuth;
@@ -110,12 +98,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Dialog locationDialog;
     private Dialog leaveCommentDialog;
     private Dialog locationInformationDialog;
+    private Dialog userOptionsDialog;
+    private Dialog logOutDialog;
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private String currentMarkerName;
-    //AppCompatSpinner userOptions;
-    private Spinner userOptions;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,59 +125,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationDialog = new Dialog(this);
         leaveCommentDialog = new Dialog(this);
         locationInformationDialog = new Dialog(this);
-        userProfileButton = findViewById(R.id.userProfileButton);
-        mapViewButton = findViewById(R.id.mapViewButton);
+        userOptionsDialog = new Dialog(this);
+        logOutDialog = new Dialog(this);
+
+        Button userProfileButton = findViewById(R.id.userProfileButton);
+        Button mapViewButton = findViewById(R.id.mapViewButton);
 
         mapViewButton.setVisibility(View.INVISIBLE);
 
         userProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MapsActivity.this, UserProfile.class));
-                //userOptions.setVisibility(View.VISIBLE);
-                userOptions.setVisibility(Visibility.MODE_IN);
+                showUserOptionMenu();
             }
         });
-
-        userOptions = (Spinner) findViewById(R.id.user_options_spinner);
-        List<String> categories = new ArrayList<String>();
-        categories.add("View Profile");
-        categories.add("Exchange Points");
-        categories.add("Log Out");
-
-        // Create an ArrayAdapter using the string array and a default spinner
-        ArrayAdapter<CharSequence> staticAdapter = ArrayAdapter
-                .createFromResource(this, R.array.user_options,
-                        android.R.layout.simple_spinner_item);
-//
-        // Specify the layout to use when the list of choices appears
-        staticAdapter
-                .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//
-        // Apply the adapter to the spinner
-        userOptions.setAdapter(staticAdapter);
-
-//        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-//                R.layout.layout_spinner_item, categories);
-//        dataAdapter.setDropDownViewResource(R.layout.layout_spinner_item);
-//
-        //userOptions.setAdapter(dataAdapter);
-        userOptions.setSelection(0);
-
-        userOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                String item = parent.getItemAtPosition(position).toString();
-                //Log.d(TAG, item);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        userOptions.setVisibility(View.INVISIBLE);
 
     }
 
@@ -263,15 +211,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.clear();
 
 
-                //check if necessary permissions have been granted
-                //if not, return from the method and stop the initialization
-                //of the map until permissions have been granted
-//                boolean canContinue = requestUserForPermissionsIfNeeded();
-//                if (!canContinue){
-//                    return;
-//                }
-
-
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
@@ -326,7 +265,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public boolean onMarkerClick(Marker marker) {
                         currentMarkerName = marker.getTitle();
-                        ShowPopUpLocation(marker);
+                        showPopUpLocation(marker);
                         return true;
                     }
                 });
@@ -348,11 +287,103 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+
+    /**
+     * method displays menu for user profile options
+     */
+    public void showUserOptionMenu(){
+        TextView userProfileView;
+        TextView exchangePointsView;
+        TextView logOutView;
+        TextView userCommentsView;
+
+        userOptionsDialog.setContentView(R.layout.user_options_menu);
+        WindowManager.LayoutParams wmlp = userOptionsDialog.getWindow().getAttributes();
+
+        wmlp.gravity = Gravity.TOP | Gravity.START;
+        wmlp.x = 1100;
+        wmlp.y = 90;
+        wmlp.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        wmlp.dimAmount = 0.0f;
+
+        userProfileView = userOptionsDialog.findViewById(R.id.userProfileBtn);
+        exchangePointsView = userOptionsDialog.findViewById(R.id.exchangePointsBtn);
+        logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
+        userCommentsView = userOptionsDialog.findViewById(R.id.userCommentsBtn);
+
+        userProfileView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapsActivity.this, UserProfile.class));
+            }
+        });
+
+        //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
+        exchangePointsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        userCommentsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapsActivity.this, UserComments.class));
+            }
+        });
+
+        logOutView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                userOptionsDialog.dismiss();
+                showLogOutWarning();
+            }
+        });
+
+
+        userOptionsDialog.show();
+    }
+
+    /**
+     * method displays log out warning
+     * and logs user out if choosen so
+     */
+    private void showLogOutWarning(){
+        Button cancelButton;
+        final Button logoutButton;
+
+        logOutDialog.setContentView(R.layout.log_out_alert);
+
+        cancelButton = logOutDialog.findViewById(R.id.cancelBtn);
+        logoutButton = logOutDialog.findViewById(R.id.logoutBtn);
+
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(MapsActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logOutDialog.dismiss();
+            }
+        });
+
+        logOutDialog.show();
+    }
+
     /**
      * method displays pop-up dialog of location when marker is clicked
      * @param marker
      */
-    public void ShowPopUpLocation(final Marker marker){
+    private void showPopUpLocation(final Marker marker){
         TextView locationName;
         TextView locationPoints;
         ImageView locationType;
@@ -494,31 +525,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //set pictures of location to ui
         locationPictures = locationInformationDialog.findViewById(R.id.locationPictureView);
         List<String> locationPictureList = getPicturesOfGivenLocation(currentMarkerName);
-        Log.d("NR PICS OF LOC", String.valueOf(locationPictureList.size()));
-
-
-//        LinearLayout.LayoutParams paramsPics = new LinearLayout.LayoutParams(370, 900);
-//        params.setMargins(0, 0, 0, 15);
-//        LinearLayout pictureRow = new LinearLayout(this);
-//        pictureRow.setOrientation(LinearLayout.HORIZONTAL);
-//        pictureRow.setLayoutParams(paramsPics);
-//        for(int i= 0; i < locationPictureList.size(); i++){
-//            ImageView userPicture = new ImageView(this);
-//            byte[] decodedString = Base64.decode(locationPictureList.get(i), Base64.DEFAULT);
-//            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-//            userPicture.setImageBitmap(Bitmap.createScaledBitmap(decodedByte, 350, 350, false));
-//
-//            if((i+1)%3 == 1){
-//                pictureRow = new LinearLayout(this);
-//                pictureRow.setOrientation(LinearLayout.HORIZONTAL);
-////                //pictureRow.setLayoutParams(params);
-//            }
-//            pictureRow.addView(userPicture);
-//
-//            if((i+1)%3 == 0){
-//                locationPictures.addView(pictureRow);
-//            }
-//        }
 
         LinearLayout.LayoutParams paramsForPictureRow = new LinearLayout.LayoutParams(1000, 340);
         LinearLayout pictureRow = new LinearLayout(this);
@@ -538,7 +544,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             userPicture.setLayoutParams(paramsForPicture);
 
             if (i != 0 && (i + 1) % 3 == 0) {
-                Log.d("FIRST IF", String.valueOf(i));
                 pictureRow.addView(userPicture);
                 locationPictures.addView(pictureRow);
 
@@ -546,16 +551,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 pictureRow.setOrientation(LinearLayout.HORIZONTAL);
                 pictureRow.setLayoutParams(paramsForPictureRow);
             } else if (i == locationPictureList.size() - 1) {
-                Log.d("SECOND IF", String.valueOf(i));
                 pictureRow.addView(userPicture);
                 locationPictures.addView(pictureRow);
             } else {
-                Log.d("LAST ELSE", String.valueOf(i));
                 pictureRow.addView(userPicture);
             }
-
-            locationInformationDialog.show();
         }
+
+        locationInformationDialog.show();
     }
 
     private boolean requestUserForPermissionsIfNeeded(){
@@ -670,11 +673,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      *                     leaves a comment
      */
     private void storeLocationComment(String userComment, String locationName){
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String email = currentUser.getEmail();
         databaseReference = FirebaseDatabase.getInstance().getReference("locationComments");
 
         CommentForLocation userCommentLocation = new CommentForLocation();
         userCommentLocation.setUserComment(userComment);
         userCommentLocation.setLocationName(locationName);
+        userCommentLocation.setUserEmail(email);
 
         String id = databaseReference.push().getKey();
         userCommentLocation.setId(id);
@@ -722,42 +728,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return null;
     }
-
-//    public AtomicBoolean getAllLocations(final AtomicBoolean done){
-//        database = FirebaseDatabase.getInstance().getReference("locations");
-//
-//        database.orderByChild("id").addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                locations = new ArrayList<>();
-//                for (DataSnapshot entity : dataSnapshot.getChildren()) {
-//                    Location toBuild = new Location();
-//
-//                    toBuild.setId(entity.child("id").getValue().toString());
-//                    toBuild.setTitle(entity.child("title").getValue().toString());
-//                    toBuild.setDescription(entity.child("description").getValue().toString());
-//                    toBuild.setType(LocationType.valueOf((String) entity.child("type").getValue()));
-//                    toBuild.setRewardPoints(Integer.valueOf(entity.child("rewardPoints").getValue().toString()));
-//
-//                    double x = (Double) entity.child("coordinates/latitude").getValue();
-//                    double y = (Double) entity.child("coordinates/longitude").getValue();
-//
-//                    LatLng coordinates = new LatLng(x, y);
-//                    toBuild.setCoordinates(coordinates);
-//
-//                    locations.add(toBuild);
-//                }
-//                done.set(true);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//                Log.e("db error", "cancelled", databaseError.toException().getCause());
-//            }
-//        });
-//
-//        return done;
-//    }
 
 
     /**

@@ -1,8 +1,9 @@
-package com.example.insight.activity;
+package com.example.insight.activity.userActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -12,12 +13,14 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.insight.R;
+import com.example.insight.activity.MainActivity;
 import com.example.insight.activity.mapActivity.MapsActivity;
 import com.example.insight.entity.VisitedLocation;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,7 +50,6 @@ public class UserProfile extends AppCompatActivity {
     private CircleImageView profilePicture;
     private List<VisitedLocation> visitedLocations;
 
-    private Button logoutButton;
     private Button mapViewButton;
     private Button userProfileButton;
 
@@ -55,6 +57,9 @@ public class UserProfile extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase database;
     private DatabaseReference databaseReference;
+
+    private Dialog userOptionsDialog;
+    private Dialog logOutDialog;
 
 
     @Override
@@ -71,7 +76,6 @@ public class UserProfile extends AppCompatActivity {
         secondEntryPoints = findViewById(R.id.secondEntryPoints);
         thirdEntryPoints = findViewById(R.id.thirdEntryPoints);
         profilePicture = findViewById(R.id.profile_image);
-        logoutButton = findViewById(R.id.logoutButton);
         mapViewButton = findViewById(R.id.mapViewButton);
         userProfileButton = findViewById(R.id.userProfileButton);
 
@@ -81,6 +85,9 @@ public class UserProfile extends AppCompatActivity {
         firstEntry.setVisibility(View.INVISIBLE);
         secondEntry.setVisibility(View.INVISIBLE);
         thirdEntry.setVisibility(View.INVISIBLE);
+
+        userOptionsDialog = new Dialog(this);
+        logOutDialog = new Dialog(this);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
@@ -143,19 +150,12 @@ public class UserProfile extends AppCompatActivity {
             }
         });
 
-        logoutButton.setOnClickListener(new View.OnClickListener() {
+        userProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(UserProfile.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                showUserOptionMenu();
             }
         });
-
-
-        userProfileButton.setVisibility(View.INVISIBLE);
 
         mapViewButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -203,5 +203,87 @@ public class UserProfile extends AppCompatActivity {
         points.setSpan(new RelativeSizeSpan(0.75f), 0, points.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         locationPoints.append(points);
+    }
+
+    /**
+     * method displays menu for user profile options
+     */
+    public void showUserOptionMenu(){
+        TextView exchangePointsView;
+        TextView logOutView;
+        TextView userCommentsView;
+
+        userOptionsDialog.setContentView(R.layout.user_options_menu);
+        WindowManager.LayoutParams wmlp = userOptionsDialog.getWindow().getAttributes();
+
+        wmlp.gravity = Gravity.TOP | Gravity.START;
+        wmlp.x = 1100;
+        wmlp.y = 90;
+        wmlp.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        wmlp.dimAmount = 0.0f;
+
+        exchangePointsView = userOptionsDialog.findViewById(R.id.exchangePointsBtn);
+        logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
+        userCommentsView = userOptionsDialog.findViewById(R.id.userCommentsBtn);
+
+
+        //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
+        exchangePointsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        userCommentsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(UserProfile.this, UserComments.class));
+            }
+        });
+
+        logOutView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                userOptionsDialog.dismiss();
+                showLogOutWarning();
+            }
+        });
+
+        userOptionsDialog.show();
+    }
+
+    /**
+     * method displays log out warning
+     * and logs user out if choosen so
+     */
+    private void showLogOutWarning(){
+        Button cancelButton;
+        final Button logoutButton;
+
+        logOutDialog.setContentView(R.layout.log_out_alert);
+
+        cancelButton = logOutDialog.findViewById(R.id.cancelBtn);
+        logoutButton = logOutDialog.findViewById(R.id.logoutBtn);
+
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(UserProfile.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logOutDialog.dismiss();
+            }
+        });
+
+        logOutDialog.show();
     }
 }

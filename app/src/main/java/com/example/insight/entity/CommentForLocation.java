@@ -9,6 +9,7 @@ public class CommentForLocation {
     String id;
     String locationName;
     String userComment;
+    String userEmail;
 
     public CommentForLocation() {
     }
@@ -35,5 +36,13 @@ public class CommentForLocation {
 
     public void setUserComment(String userComment) {
         this.userComment = userComment;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 }
