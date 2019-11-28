@@ -219,15 +219,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
                 //TODO start
-//                String locationProvider = LocationManager.GPS_PROVIDER;
-                //android.location.Location currentLocation = locationManager.requestLocationUpdates(locationProvider, 0, 0,  );
-//                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//                currentUserLocation = currentLocation;
+                String locationProvider = LocationManager.GPS_PROVIDER;
+                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                currentUserLocation = currentLocation;
                 //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
 
-                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                currentLocation.setLatitude(46.7695133);
-                currentLocation.setLongitude(23.5898073);
+//                android.location.Location currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                currentLocation.setLatitude(46.7695133);
+//                currentLocation.setLongitude(23.5898073);
                 //TODO end -> remove mockup current location and replace with the real one up above
 
                 currentUserLocation = currentLocation;
