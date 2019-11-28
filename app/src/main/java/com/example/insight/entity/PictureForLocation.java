@@ -4,12 +4,13 @@ package com.example.insight.entity;
  * class used to store and read pictures uploaded
  * by users for locations
  */
-public class UserPictureForLocation {
+public class PictureForLocation {
     private String id;
     private String locationName;
     private String encodedPicture;
+    private String userEmail;
 
-    public UserPictureForLocation() {
+    public PictureForLocation() {
     }
 
     public String getId() {
@@ -34,5 +35,13 @@ public class UserPictureForLocation {
 
     public void setEncodedPicture(String encodedPicture) {
         this.encodedPicture = encodedPicture;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 }
