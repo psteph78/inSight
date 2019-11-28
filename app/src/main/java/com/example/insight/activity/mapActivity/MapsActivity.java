@@ -41,8 +41,7 @@ import android.widget.Toast;
 
 import com.example.insight.R;
 import com.example.insight.activity.MainActivity;
-import com.example.insight.activity.userActivities.UserComments;
-import com.example.insight.activity.userActivities.UserProfile;
+import com.example.insight.activity.UserProfile;
 import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.VisitedLocation;
@@ -295,7 +294,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView userProfileView;
         TextView exchangePointsView;
         TextView logOutView;
-        TextView userCommentsView;
 
         userOptionsDialog.setContentView(R.layout.user_options_menu);
         WindowManager.LayoutParams wmlp = userOptionsDialog.getWindow().getAttributes();
@@ -309,7 +307,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         userProfileView = userOptionsDialog.findViewById(R.id.userProfileBtn);
         exchangePointsView = userOptionsDialog.findViewById(R.id.exchangePointsBtn);
         logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
-        userCommentsView = userOptionsDialog.findViewById(R.id.userCommentsBtn);
 
         userProfileView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -326,13 +323,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        userCommentsView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MapsActivity.this, UserComments.class));
-            }
-        });
-
         logOutView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -340,7 +330,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 showLogOutWarning();
             }
         });
-
 
         userOptionsDialog.show();
     }
@@ -673,14 +662,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      *                     leaves a comment
      */
     private void storeLocationComment(String userComment, String locationName){
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        final String email = currentUser.getEmail();
         databaseReference = FirebaseDatabase.getInstance().getReference("locationComments");
 
         CommentForLocation userCommentLocation = new CommentForLocation();
         userCommentLocation.setUserComment(userComment);
         userCommentLocation.setLocationName(locationName);
-        userCommentLocation.setUserEmail(email);
 
         String id = databaseReference.push().getKey();
         userCommentLocation.setId(id);
