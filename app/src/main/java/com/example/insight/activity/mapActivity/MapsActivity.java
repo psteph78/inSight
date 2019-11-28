@@ -41,7 +41,8 @@ import android.widget.Toast;
 
 import com.example.insight.R;
 import com.example.insight.activity.MainActivity;
-import com.example.insight.activity.UserProfile;
+import com.example.insight.activity.userActivities.UserComments;
+import com.example.insight.activity.userActivities.UserProfile;
 import com.example.insight.entity.CommentForLocation;
 import com.example.insight.entity.Location;
 import com.example.insight.entity.VisitedLocation;
@@ -64,6 +65,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -292,6 +295,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void showUserOptionMenu(){
         TextView userProfileView;
+        TextView userCommentsView;
         TextView exchangePointsView;
         TextView logOutView;
 
@@ -305,6 +309,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         wmlp.dimAmount = 0.0f;
 
         userProfileView = userOptionsDialog.findViewById(R.id.userProfileBtn);
+        userCommentsView = userOptionsDialog.findViewById(R.id.userCommentsBtn);
         exchangePointsView = userOptionsDialog.findViewById(R.id.exchangePointsBtn);
         logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
 
@@ -314,6 +319,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivity(new Intent(MapsActivity.this, UserProfile.class));
             }
         });
+
+        userCommentsView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapsActivity.this, UserComments.class));
+            }
+        });
+
 
         //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
         exchangePointsView.setOnClickListener(new View.OnClickListener() {
