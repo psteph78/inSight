@@ -10,58 +10,63 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:fontFamily="@font/playfair_display"
-        android:padding="10dp"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical|end"
         android:text="@string/your_profile"
-        android:background="#FFFFFF"
+        android:background="#5AE3F5"
         android:textSize="17sp"
         android:textStyle="bold"
-        android:textColor="#5AE3F5"/>
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:id="@+id/exchangePointsBtn"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:fontFamily="@font/playfair_display"
-        android:padding="10dp"
         android:text="@string/exchange_points"
-        android:background="#FFFFFF"
+        android:background="#5AE3F5"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical|end"
         android:textSize="17sp"
         android:textStyle="bold"
-        android:textColor="#5AE3F5" />
+        android:textColor="#FFFFFF" />
 
     <TextView
         android:id="@+id/userCommentsBtn"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:fontFamily="@font/playfair_display"
-        android:padding="10dp"
         android:text="@string/my_comments"
-        android:background="#FFFFFF"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical|end"
+        android:background="#5AE3F5"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#5AE3F5"/>
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:id="@+id/userPicturesBtn"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:fontFamily="@font/playfair_display"
-        android:padding="10dp"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical|end"
         android:text="@string/my_pictures"
-        android:background="#FFFFFF"
+        android:background="#5AE3F5"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#5AE3F5"/>
+        android:textColor="#FFFFFF"/>
 
     <TextView
         android:id="@+id/logoutBtn"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:fontFamily="@font/playfair_display"
-        android:padding="10dp"
+        android:paddingEnd="20dp"
+        android:gravity="center_vertical|end"
         android:text="@string/log_out"
-        android:background="#FFFFFF"
+        android:background="#5AE3F5"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="#5AE3F5"/>
+        android:textColor="#FFFFFF"/>
 </LinearLayout>

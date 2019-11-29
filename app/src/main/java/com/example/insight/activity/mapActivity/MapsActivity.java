@@ -305,7 +305,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         wmlp.gravity = Gravity.TOP | Gravity.START;
         wmlp.x = 1100;
-        wmlp.y = 90;
+        wmlp.y = 110;
         wmlp.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         wmlp.dimAmount = 0.0f;
 
