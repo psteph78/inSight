@@ -189,7 +189,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         }
 
-        database.orderByChild("id").addValueEventListener(new ValueEventListener() {
+        database.orderByChild("id").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 locations = new ArrayList<>();
@@ -621,7 +621,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     public void encodeBitmapAndSaveToFirebase(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 20, baos);
         String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -780,7 +780,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         databaseReference = FirebaseDatabase.getInstance().getReference("locationPictures");
 
 
-        databaseReference.orderByChild("id").addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("id").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 allLocationPictures = new ArrayList<>();
@@ -809,7 +809,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         databaseReference = FirebaseDatabase.getInstance().getReference("locationComments");
 
 
-        databaseReference.orderByChild("id").addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("id").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 allLocationComments = new ArrayList<>();
@@ -839,7 +839,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("visitedLocations");
 
-        databaseReference.orderByChild("userEmail").equalTo(email).addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("userEmail").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 visitedLocations = new HashSet<>();

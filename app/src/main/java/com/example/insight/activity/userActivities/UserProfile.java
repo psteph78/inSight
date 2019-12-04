@@ -94,7 +94,7 @@ public class UserProfile extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("visitedLocations");
 
-        databaseReference.orderByChild("userEmail").equalTo(email).addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("userEmail").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 visitedLocations = new ArrayList<>();

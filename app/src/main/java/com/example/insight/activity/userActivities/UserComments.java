@@ -91,7 +91,7 @@ public class UserComments extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
 
-        databaseReference.orderByChild("userEmail").equalTo(email).addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("userEmail").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 allUserComments = new ArrayList<>();

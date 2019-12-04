@@ -90,7 +90,7 @@ public class UserPictures extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         final String email = currentUser.getEmail();
 
-        databaseReference.orderByChild("userEmail").equalTo(email).addValueEventListener(new ValueEventListener() {
+        databaseReference.orderByChild("userEmail").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 allUserPictures = new ArrayList<>();
@@ -100,7 +100,6 @@ public class UserPictures extends AppCompatActivity {
                     pictureForLocation.setEncodedPicture(childDataSnapshot.child("encodedPicture").getValue().toString());
                     allUserPictures.add(pictureForLocation);
                 }
-
                 showUserPicturesInUI();
             }
 
