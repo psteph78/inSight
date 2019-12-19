@@ -194,13 +194,20 @@ public class UserPictures extends AppCompatActivity {
         logOutView = userOptionsDialog.findViewById(R.id.logoutBtn);
 
 
-        //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
+
         exchangePointsView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                startActivity(new Intent(UserPictures.this, ExchangePoints.class));
             }
         });
+        //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
+//        exchangePointsView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//            }
+//        });
 
         userProfileView.setOnClickListener(new View.OnClickListener() {
             @Override

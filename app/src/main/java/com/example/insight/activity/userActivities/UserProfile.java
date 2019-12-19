@@ -139,8 +139,8 @@ public class UserProfile extends AppCompatActivity {
                             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     userPoints.append(points);
 
-                    String profileImgUrl = childDataSnapshot.child("profileImgUrl").getValue().toString();
-                    Picasso.get().load(profileImgUrl).into(profilePicture);
+                  //  String profileImgUrl = childDataSnapshot.child("profileImgUrl").getValue().toString();
+                  //  Picasso.get().load(profileImgUrl).into(profilePicture);
                 }
             }
 
@@ -229,11 +229,10 @@ public class UserProfile extends AppCompatActivity {
         userPicturesView = userOptionsDialog.findViewById(R.id.userPicturesBtn);
 
 
-        //TODO ONCE EXCHANGE POINT ACTIVITY IS DONE
         exchangePointsView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                startActivity(new Intent(UserProfile.this, ExchangePoints.class));
             }
         });
 

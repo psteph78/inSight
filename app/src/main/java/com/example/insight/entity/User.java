@@ -67,4 +67,6 @@ public class User {
     public void setProfileImgUrl(String profileImgUrl) {
         this.profileImgUrl = profileImgUrl;
     }
+
+
 }
